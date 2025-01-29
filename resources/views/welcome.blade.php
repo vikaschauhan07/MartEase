@@ -119,13 +119,13 @@
     <h2>Contact Us</h2>
     <p>If you have any questions about this Privacy Policy, please contact us:</p>
     <ul>
-        <li>By email: <a href="mailto:keshav@gmail.com">keshav@gmail.com</a></li>
-        <li>By visiting our website: <a href="http://keshav.in" target="_blank">keshav.in</a></li>
+        <li>By email: <a href="support@martease.in">support@martease.in</a></li>
+        <li>By visiting our website: <a href="https://martease.in/" target="_blank">martease.in</a></li>
     </ul>
 </div>
 
 <footer>
-    <p>© 2025 Keshav. All rights reserved.</p>
+    <p>© 2025 MartEase. All rights reserved.</p>
 </footer>
 
 <!-- Bootstrap 5 JS (Optional) -->
