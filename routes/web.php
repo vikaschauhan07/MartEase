@@ -6,6 +6,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/privacy', function () {
-    return view('pages.privacy');
-});
+// Route::get('/privacy', function () {
+//     return view('pages.privacy');
+// });
