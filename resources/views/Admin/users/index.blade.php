@@ -1,20 +1,19 @@
 @extends('Admin.layouts.app')
 @section('title') Users @endsection
-@section('page-title') Users Management @endsection
+@section('page-title') User Management @endsection
 @section('content')
 <div class="container-fluid">
     <div class="table_box mb-3">
         <div class="py-2 pb-4 d-flex justify-content-between flex-wrap">
             <div class="d-flex">
-                {{-- <a href="{{route("admin.add-user")}}" class="add_btn me-2">+ Add User</a> --}}
             </div>
             <div class="d-flex gap-2 flex-wrap">
 
                 <div class="search_box position-relative">
-                    <img src="{{asset('Admin/images/search.svg')}}" alt="" class="search_icon">
                     <input type="text" placeholder="Search" value="{{$search}}" class="search_input" id="search-input">
                 </div>
                 <div class="select-menu main_filter_select m-0">
+                    
                     <div class="select">
                         <span>
                             @if($status == 1)
@@ -37,8 +36,12 @@
                     </div>
                     <input type="hidden" name="filter" id="filterInput" value="{{$status}}">
                 </div>
-                <a href="" class="add_btn" onclick="searchFunction(event)">Search</a>
-                <a href="{{route("admin.get-user-list")}}" class="add_btn">Reset</a>
+                <button class="search_BUTTON" onclick="searchFunction(event)"> 
+                    <i class="fa-solid fa-magnifying-glass" title="Search"></i>
+                </button>
+                <button class="search-reset-btn search_BUTTON" onclick="resetSearch(event)">
+                    <i class="fa-solid fa-xmark" title="Reset search"></i>
+                </button>
             </div>
         </div>
         <div class="card-body p-0">
@@ -46,13 +49,11 @@
                 <table class="table">
                     <thead>
                         <tr class="table_heading">
-                            <th>Sr. No.</th>
+                            <th style="width: 100px">Serial No.</th>
                             <th>Name</th>
                             <th>Email</th>
-                            {{-- <th>Profile Image</th> --}}
                             <th>Phone Number</th>
                             <th class="ps-3">Status</th>
-                            <th>No of Orders</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -63,40 +64,40 @@
                                 <td>
                                     {{ ($users->currentPage() - 1) * $users->perPage() + $key + 1 }}
                                 </td>
-                                <td>{{$user->name}}</td>
-                                <td>{{$user->email}}</td>
-                                {{-- <td>
-                                    <img src="{{asset($user->profile_image ?? 'Admin/images/nouser.svg')}}" alt="" class="profile_img">
-                                </td> --}}
-                                <td>+1 {{$user->phone_number}}</td>
-                                <td>
-                                    <select class="form-select status_select @if($user->status == 1) active_option @else deactivate_option @endif " aria-label="Default select example" id="status-user-{{$user->id}}" onchange="changeStatus(event, {{$user->id}},{{$user->status}})"  data-original-status="{{$user->status + 1}}" >
-                                        <option class="approved @if($user->status == 1) 'active' @endif" 
-                                                value="1" 
-                                                @if($user->status == 1) selected @endif>
-                                            Active
-                                        </option>
-                                        <option class="rejected @if($user->status != 1) 'active' @endif" 
-                                                value="0" 
-                                                @if($user->status != 1) selected @endif>
-                                            Inactive
-                                        </option>
-                                    </select>
+                                <td class="table_user_nameMax">
+                                    <span  data-bs-toggle="tooltip" data-bs-placement="top" title="{{$user->name}}">
+                                        {{$user->name}}
+                                    </span>
                                 </td>
-                                <td>{{$user->packages->where("status" ,'>', 0)->where("step", 5)->count()}}</td>
+                                <td>{{$user->email}}</td>
+                                <td>{{$user->phone_number}}</td>
+                                <td>
+                                    <label class="switch">
+                                        <input type="checkbox" id="togBtn-{{$user->id}}" @if($user->status == 1) checked @endif onchange="changeStatus(event, {{$user->id}},{{$user->status}})" >
+                                        <div class="slider round">
+                                          <span class="on">Active</span>
+                                          <span class="off">Inactive</span>
+                                        </div>
+                                    </label>
+                                </td>
                                 <td>
                                     <div class="item_center">
                                         <a href="{{route('admin.view-user',["user_id" => encrypt($user->id)])}}">
                                             <img class="me-2 action_icon" src="{{asset('Admin/images/view.svg')}}" alt="action-icon" />
                                         </a>
-                                        <img class="me-2 action_icon" src="{{asset('Admin/images/edit-icon.svg')}}" alt="action-icon" />
                                     </div>
-                                
                                 </td>
                             </tr>
                             @endforeach
                         @else
-                            <td colspan="12"> No Users Found</td>
+                            <td
+                                className="text-center p-2 p-lg-3 p-xl-5"
+                                colSpan="100%"
+                                style="text-align: center; vertical-align: middle; height: 150px;"
+                            
+                            >
+                                No Record Found
+                            </td>
                         @endif
                     </tbody>
                 </table>
@@ -125,6 +126,9 @@
         $filterInput.val($(this).data('value'));
         $optionsList.toggleClass("active");
         $select.find(".fa-angle-down").toggleClass("fa-angle-up");
+        const search = $("#search-input").val();
+        const status = $(this).data('value');
+        window.location.href = "{{route('admin.get-user-list')}}" + "?search=" + search + "&status=" + status;
     });
 </script>
 <script>
@@ -144,16 +148,21 @@
         }
     }
 
+    function resetSearch(event){
+        event.preventDefault();
+        window.location.href = "{{ route('admin.get-user-list') }}";
+    }
+
     function changeStatus(event, userId, status) {
         event.preventDefault();
-        var selectElement = $(event.target);
-        var selectedStatus = selectElement.val(); 
+        const selectElement = $(event.target);
+        const selectedStatus = selectElement.is(':checked') ? 1 : 0;
         Swal.fire({
             title: 'Are you sure?',
             text: "Do you want to change the user's status?",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
+            confirmButtonColor: 'green',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, change it!',
             cancelButtonText: 'No, cancel!'
@@ -171,9 +180,8 @@
                             title: 'Success!',
                             text: 'User status updated successfully.',
                             icon: 'success',
+                            confirmButtonColor: '#E10E0E',
                             confirmButtonText: 'OK'
-                        }).then(() => {
-                            location.reload(); 
                         });            
                     },
                     error: function(xhr, status, error) {
@@ -206,16 +214,14 @@
                                 confirmButtonText: 'OK'
                             });
                         }
-                        $("#status-user-"+userId).val(status);
-
+                        selectElement.prop('checked', status === 1);
                     }
                 });
             } else {
-                $("#status-user-"+userId).val(status);
+                selectElement.prop('checked', status === 1);
             }
         });
     }
-
 
 </script>
 @endsection

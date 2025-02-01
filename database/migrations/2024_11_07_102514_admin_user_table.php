@@ -30,8 +30,8 @@ return new class extends Migration
             $table->timestamps();
         });
         DB::table('admin')->insert([
-            'name' => 'Admin',
-            'email' => 'admin@yopmail.com',
+            'name' => 'HUNKR',
+            'email' => 'hunkr@yopmail.com',
             'password' => Hash::make('Test@123'),
             'created_at' => now(),
             'updated_at' => now(),

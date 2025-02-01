@@ -90,7 +90,7 @@
                             errorMessages = value[0];
                             $('#' + key + '-error').html(errorMessages);
                         });
-                        toastr.warning("Validation error");
+                        // toastr.warning("Validation error");
                     } else{
                         toastr.error(xhr.responseJSON.message);
                     }

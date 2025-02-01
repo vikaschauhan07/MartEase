@@ -1,5 +1,5 @@
 :root {
-    --blue: #346AF4;
+    --red: #E10E0E;
     --black: #19191A;
     --white: #fff;
     --gray: #959595;
@@ -54,7 +54,7 @@ a {
 } */
 .showImg {
     top: 25px;
-    color: #18ABE3 !important;
+    color: var(--red) !important;
     position: absolute;
     right: 25px;
     cursor: pointer;
@@ -150,7 +150,7 @@ a {
 
 .login-right-form input[type="button"]:hover {
     background: transparent;
-    color: var(--blue);
+    color: var(--red);
 }
 
 /* .login-right-form a.forgotPassword {
@@ -164,7 +164,7 @@ a {
 } */
 
 .login-right-form a.back-to-button i {
-    color: var(--blue);
+    color: var(--red);
     width: 7%;
     background: var(--light-gray);
     display: block;
@@ -201,7 +201,7 @@ a {
 }
 
 .login-right-form a.text-center span {
-    color: var(--blue);
+    color: var(--red);
 }
 
 /* password */
@@ -329,7 +329,7 @@ a {
 }
 .login_logo{
     width: 100%;
-    max-width: 440px;
+    max-width: 420px;
 }
 .owerflow_hidden{
     overflow-x: hidden;
@@ -396,7 +396,7 @@ input:-webkit-autofill:active {
     transition: background-color 5000s ease-in-out 0s;
 }
 .login_btn{
-    background: #18ABE3;
+    background: var(--red);
     border-radius: 16px;
     border: none;
     color: #fff;
@@ -405,14 +405,14 @@ input:-webkit-autofill:active {
     padding: 15px 20px;
 }
 .forgotPassword{
-    color: #18ABE3 !important; 
+    color: var(--red) !important; 
     font-size: 16px;
     font-weight: 500;
     text-decoration: none;
   
 }
 .otp_input{
-    border: 1px solid #18ABE3;
+    border: 1px solid var(--red);
     border-radius: 20px;
     padding: 20px;
     font-size: 18px;
@@ -424,7 +424,7 @@ input:-webkit-autofill:active {
 
 }
 .otp_span_text{
-    color: #019BD6 !important;
+    color:  var(--red) !important;
     font-weight: 500 !important;
 }
 
@@ -439,9 +439,31 @@ input:-webkit-autofill:active {
 }
 
 /* ------------responsive css start------------ */
+@media (max-width: 1200px) {
+    .login_logo{
+        max-width: 320px;
+    }
+}
+@media (max-width: 992px) {
+    .login_form_card{
+        padding: 20px;
+        margin: 10px;
+    }
+    .login_logo{
+        max-width: 260px;
+    }
+}
 @media (max-width: 768px) {
+    .login_form_card{
+        padding: 20px 10px;
+        margin: 10px;
+    }
+    .login_logo{
+        max-width: 280px;
+        padding: 20px;
+    }
     .mobile_bg{
-        background-image: url(../images/logo-bg.svg);
+        background-image: url(../images/login-logo-bg.svg);
         width: 100%;
         background-position: center;
         background-size: cover;

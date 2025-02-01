@@ -1,13 +1,11 @@
 <?php
-
-use App\Http\Controllers\Driver\DriverAuthController;
-use App\Http\Controllers\Driver\DriverDocumentController;
-use App\Http\Controllers\Driver\DriverProfileController;
-use App\Http\Controllers\Driver\DriverTripController;
 use App\Http\Controllers\User\UserAuthController;
-use App\Http\Controllers\User\UserPackageController;
+use App\Http\Controllers\User\UserBlogController;
+use App\Http\Controllers\User\UserChatController;
+use App\Http\Controllers\User\UserFolderDocumnetController;
+use App\Http\Controllers\User\UserFolderManagement;
+use App\Http\Controllers\User\UserPostController;
 use App\Http\Controllers\User\UserProfileController;
-use App\Http\Middleware\AuthenticateDriver;
 use App\Http\Middleware\AuthenticateUser;
 use Illuminate\Support\Facades\Route;
 
@@ -23,23 +21,13 @@ Route::group(['prefix' => 'v1'],function () {
         Route::post("/forget-password", [UserAuthController::class, "forgetPassword"]);
         Route::post("/resend-otp", [UserAuthController::class, "resendOtp"]);
         Route::post("/verify-otp", [UserAuthController::class, "verifyOtp"]);
+
         Route::post("/reset-password", [UserAuthController::class, "resetPassword"]);  
         //Faq and Mail Ids
         Route::get("/get-faqs", [UserProfileController::class, "getFaqs"]);
         Route::post("/contact-us", [UserProfileController::class, "contactUs"]);
         
-        //Package Add Apis 
-        Route::get("/home", [UserProfileController::class, "home"]);
-        Route::post("/create-package", [UserPackageController::class, "createPackage"]);
-        Route::post("/add-sender-details", [UserPackageController::class, "addSenderDetails"]);
-        Route::post("/add-reciver-details", [UserPackageController::class, "addReciverDetails"]);
-        Route::get("/get-city-and-hitchmail-details", [UserPackageController::class, "getCityAndHitchmailDetails"]);
-        Route::get("/get-pickup-points", [UserPackageController::class, "getPickupPoints"]);
-        Route::post("/add-payment-to-parcel", [UserPackageController::class, "addPayment"]);
-        Route::post("/add-images-to-parcel", [UserPackageController::class, "addImagesToParcel"]);
-        Route::post("/complete-parcel", [UserPackageController::class, "completePackage"]);
-        Route::get("/track-package", [UserPackageController::class, "trackPackage"]);
-        Route::get("/get-package-details", [UserPackageController::class, "getPackageDtails"]);
+        Route::post("/social/apple-login", [UserAuthController::class, "socialAuthentication"]);            
         
         Route::middleware([AuthenticateUser::class])->group(function () {
             Route::get("/log-out", [UserProfileController::class, "userLogOut"]);
@@ -47,34 +35,46 @@ Route::group(['prefix' => 'v1'],function () {
             Route::get("/get-my-profile", [UserProfileController::class, "getMyProfile"]);
             Route::post("/update-profile", [UserProfileController::class, "updateProfile"]);  
             Route::post("/change-password", [UserProfileController::class, "updatePassword"]);  
-             
+            
             //Home api
-            Route::get("/get-parcel-history",[UserPackageController::class, "getPacakageHistory"]);
-        });
-    });
+            Route::post("/create-new-folder", [UserFolderDocumnetController::class, "createNewFolder"]);
+            Route::post("/edit-folder", [UserFolderDocumnetController::class, "editFolder"]);
 
-    Route::group(['prefix' => 'driver'],function () {
-        Route::post("/authenticate",[DriverAuthController::class, "authenticate"]);
-        Route::post("/register",[DriverAuthController::class, "register"]);
-        Route::post("/verify-phone-otp",[DriverAuthController::class, "verifyPhoneOtp"]);
-        Route::post("/resend-phone-otp",[DriverAuthController::class, "resendPhoneOtp"]);
-        Route::post("/verify-email-otp",[DriverAuthController::class, "verifyEmailOtp"]);
-        Route::post("/resend-email-otp",[DriverAuthController::class, "resendEmailOtp"]);
-        Route::post("/forget-password", [DriverAuthController::class, "forgetPassword"]);
-        Route::post("/resend-otp", [DriverAuthController::class, "resendOtp"]);
-        Route::post("/verify-otp", [DriverAuthController::class, "verifyOtp"]);
-        Route::post("/reset-password", [DriverAuthController::class, "resetPassword"]);  
-        Route::post("/add-driver-details",[DriverDocumentController::class,"addDriverDetails"]);
-        Route::middleware([AuthenticateDriver::class])->group(function () {
-            Route::get("/get-my-profile", [DriverProfileController::class, "getMyProfile"]);
-            Route::post("/update-profile", [DriverProfileController::class, "updateProfile"]);  
-            Route::post("/change-password", [DriverProfileController::class, "updatePassword"]);  
-            Route::get("/delete-my-account", [DriverProfileController::class, "deleteMyAccount"]);
-            Route::get("/log-out", [DriverProfileController::class, "userLogOut"]);
+            Route::get("/get-all-folders", [UserFolderDocumnetController::class, "getAllFolders"]);
+            Route::get("/delete-folder", [UserFolderDocumnetController::class, "deleteFolder"]);
+            Route::post("/add-files-to-folder", [UserFolderDocumnetController::class, "addDocumentsToFolder"]);
+            Route::get("/get-folder-by-id", [UserFolderDocumnetController::class, "getFolderById"]);
+            Route::get("/delete-file", [UserFolderDocumnetController::class, "deleteFile"]);
 
-            Route::get("/get-posted-trips", [DriverTripController::class, "getPostedTrips"]);
-            Route::get("/get-trip", [DriverTripController::class, "getTripDetails"]);
+            // Blog apis
+            Route::get("/get-all-blogs", [UserBlogController::class, "getAllBlogs"]);
+            
+            // Post Apis
+            Route::get("/get-issues-list", [UserPostController::class, "getReportIssuesList"]);
+            Route::post("/create-post", [UserPostController::class, "createPost"]);
+            Route::get("/get-community-list", [UserPostController::class, "getCommunityList"]);
+            Route::get("/get-city-list", [UserPostController::class, "getCity"]);
+            Route::get("/get-community-post", [UserPostController::class, "getCommunityPost"]);
+            Route::get("/post/details", [UserPostController::class, "getPostById"]);
+            Route::get("/post/delete", [UserPostController::class, "deletePost"]);
+            Route::get("/post/like", [UserPostController::class, "likePost"]);
+            Route::post("/post/comment", [UserPostController::class, "commentPost"]);
+            Route::get("/post/comment", [UserPostController::class, "getPostAllComment"]);
+            Route::get("/post/comment/like", [UserPostController::class, "likeComment"]);
+            Route::post("/post/report", [UserPostController::class, "reportPost"]);
+            Route::get("/reasons", [UserPostController::class, "getReasons"]);
 
+            Route::group(['prefix' => 'socket'],function () { 
+                Route::post("/register", [UserChatController::class, "registerSocket"]);
+                Route::post("/send-message", [UserChatController::class, "sendMessage"]);
+                Route::get("/get-chat-history", [UserChatController::class, "getChatHistory"]);
+
+                Route::post('/react-to-chat-request', [UserChatController::class, 'reactToChatRequest']);
+                Route::get("/get-chat-requests", [UserChatController::class, "getChatRequests"]);
+                Route::get("/get-chat-list", [UserChatController::class, "getChatLists"]);
+
+
+            });
         });
     });
 });

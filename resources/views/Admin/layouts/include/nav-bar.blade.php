@@ -39,7 +39,7 @@
             <li class="menu_item">
                 <a class="dropdown-item" href="{{ route('admin.logout') }}">
                     <i class="fa-solid fa-right-from-bracket me-2 profileIcon"></i>
-                    Logout
+                    <span class="red">Logout</span>
                 </a>
             </li>
         </ul>
@@ -59,7 +59,7 @@
 }
 .profile .dropdown-toggle::after {
 	margin-top: 22px;
-	color: #18ABE3 !important;
+	color: #E10E0E !important;
 }
 
 .profileButton{

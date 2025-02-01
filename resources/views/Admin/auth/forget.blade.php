@@ -51,8 +51,8 @@
                             let errors = xhr.responseJSON.error;
                             $('#emailError').text(errors[0]);
                             $('#sendOtpButton').prop('disabled', false).html('Send Verification Code');
-                        } else {
-                            alert('An unexpected error occurred. Please try again.');
+                        } else{
+                            toastr.error(xhr.responseJSON.message);
                         }
                     },
                     complete: function() {

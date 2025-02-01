@@ -1,6 +1,6 @@
 @extends('Admin.layouts.app')
 @section('title') Users @endsection
-@section('page-title') <h3 class="mb-0 page_title"><span>Users Management</span> > Add User</h3> @endsection
+@section('page-title') <h3 class="mb-0 page_title"><span>Shippers Management</span> > Add User</h3> @endsection
 @section('content')
 <div class="container-fluid">
     <div class="profile_rapper d-block shadow">

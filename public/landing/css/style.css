@@ -1,0 +1,234 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Rubik", sans-serif;
+}
+
+.video-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: -1; /* Ensures the video stays behind other content */
+}
+
+.video-background video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  transform: translate(-50%, -50%);
+  object-fit: cover; /* Ensures the video covers the entire area */
+}
+.fade_content {
+  background-color: #00000060;
+  min-height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+.content {
+  width: 100%;
+  position: relative;
+  z-index: 1; /* Ensures the content is above the video */
+  color: white;
+  display: flex;
+  text-align: center;
+  align-items: center;
+  flex-direction: column;
+  min-height: 100%;
+  /* padding: 10px; */
+}
+.logo {
+  width: 292px;
+  margin-top: 43px;
+}
+.landingPage_heading {
+  font-size: 48px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-top: 98px;
+}
+.landingPage_content {
+  font-size: 18px;
+  font-weight: 400;
+  color: #ffffff;
+  margin-top: 30px;
+  max-width: 655px;
+  margin-bottom: 0;
+}
+.time_box {
+  border: 1px solid #ffffff;
+  background: #ffffff0e;
+  backdrop-filter: blur(44px);
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 20px;
+  padding: 20px 50px;
+  margin: 44px 0;
+  flex-wrap: wrap;
+}
+.time_count span {
+  font-size: 17px;
+  font-weight: 400;
+}
+.time_count p,
+.time_divider {
+  font-size: 54px;
+  font-weight: 500;
+  margin: 0;
+}
+.email_input {
+  font-size: 18px;
+  font-weight: 400;
+  color: #ffffff;
+  max-width: 408px;
+  background: #283036;
+  width: 100%;
+  border: 1px solid #41464a;
+  border-radius: 50px;
+  padding: 12px 30px;
+}
+.email_button {
+  width: 100%;
+  max-width: 193px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+  background: #e10e0e;
+  width: 100%;
+  border: none;
+  border-radius: 50px;
+  padding: 14px 30px;
+  white-space: nowrap;
+}
+.card_box {
+  border: none !important;
+  background: transparent !important;
+  width: 100%;
+  /* padding: 10px; */
+}
+.card_box .card-title {
+  font-size: 25px;
+  font-weight: 400;
+  color: #ffffff;
+  margin-bottom: 12px;
+  text-align: start;
+}
+.card_box .card-text {
+  font-size: 18px;
+  font-weight: 400;
+  color: #a5a8ab;
+  text-align: start;
+}
+.cardIcon_bg {
+  background: #ffffff03;
+  width: 74px;
+  height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  border: 1px solid #ffffff29;
+  backdrop-filter: blur(44px);
+  margin-bottom: 30px;
+}
+.card_rowBox {
+  margin-top: 54px;
+  margin-bottom: 100px;
+}
+.notify_icon {
+  width: 16px;
+}
+.cards {
+  width: auto;
+  max-width: 240px;
+}
+.card_row {
+  gap: 16px;
+}
+
+/* responsive---------------- */
+@media screen and (min-width: 1200px) and ( max-width: 1420px) {
+  .cards {
+    width: auto;
+    max-width: 210px;
+  }
+  .card_box .card-text {
+    font-size: 16px;
+  }
+  .card_box .card-title {
+    font-size: 22px;
+  }
+}
+@media screen and (max-width: 768px) {
+  .cardIcon_bg {
+    width: 55px;
+    height: 55px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+  }
+  .card_row{
+    justify-content: flex-start !important;
+  }
+  .card_box .card-title {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+  .card_box .card-text {
+    font-size: 13px;
+  }
+  .cards {
+    width: auto;
+    max-width: 100%;
+  }
+  .logo {
+    max-width: 170px !important;
+  }
+  .landingPage_heading {
+    font-size: 28px;
+    margin-top: 42px;
+  }
+  .landingPage_content {
+    font-size: 14px;
+    margin-top: 15px;
+  }
+  .time_count span {
+    font-size: 12px;
+  }
+  .time_count p,
+  .time_divider {
+    font-size: 28px;
+  }
+  .time_box {
+    border-radius: 16px;
+    padding: 12px 25px;
+    margin: 30px 0;
+  }
+  .email_button {
+    width: auto;
+    font-size: 12px;
+    padding: 9px 15px;
+    
+  }
+  .email_input {
+    font-size: 14px;
+    padding: 9px 20px;
+  }
+  .card_rowBox {
+    margin-top: 24px;
+    margin-bottom: 50px;
+  }
+}
