@@ -9,6 +9,7 @@ use App\Mail\EmailService;
 use App\Models\DriverDocumnets;
 use App\Models\Drivers;
 use Exception;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -20,19 +21,42 @@ class AdminDriverController extends Controller
 {
     public function getDrivers(Request $request){
         $validator = Validator::make($request->all(), [
-            'status' => 'in:0,1,2'
+            'status' => 'in:0,1,2',
+            'search' => 'nullable|string',
+            'driverStatus' => 'nullable|in:0,1,2'
         ]);
+      
         if ($validator->fails()) {
             session()->flash("error","Invalid status.");
             return  redirect()->route("admin.get-driver-list");
         }
         $status = 1;
         $search = '';
+        $driverStatus = 0;
+
         if(isset($request->status) && !empty(isset($request->status))){
             $status = $request->status;
         }
-        $drivers = Drivers::where('is_admin_approved', $status)->where("step_completed", 4)->paginate(10);
-        return view("Admin.driver.index", compact("drivers","status", "search"));   
+        if(isset($request->search) && !empty(isset($request->search))){
+            $search = $request->search;
+        }
+        if(isset($request->driverStatus) && !empty(isset($request->driverStatus))){
+            $driverStatus = $request->driverStatus;
+        }
+        $drivers = Drivers::where('step_completed', 4)
+        ->when($search, function ($query) use ($search) {
+            $query->where(function ($subQuery) use ($search) {
+                $subQuery->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        })
+        ->when($driverStatus, function ($query) use ($driverStatus) {
+            $query->where('status', $driverStatus == 2 ? 0 : $driverStatus);
+        })
+        ->where('is_admin_approved', $status)
+        ->orderBy('created_at', 'DESC')
+        ->paginate(10);
+        return view("Admin.driver.index", compact("drivers","status", "search","driverStatus"));   
     }
 
     public function addDrivers(Request $request){
@@ -41,14 +65,18 @@ class AdminDriverController extends Controller
 
     public function addDriversPost(Request $request){
         $validator = Validator::make($request->all(), [
-            'profile_image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            'name' => 'required|string|max:255',
+            'profile_image' => 'required|image|mimes:jpeg,png,jpg|max:4048',
+            'name' => 'required|string|max:255|min:5|regex:/^[A-Za-z\s]+$/',
             'email' => 'required|email:rfc,dns|regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
             'phone_number' => 'required|numeric|digits_between:8,15',
             'driving_licence_front' => 'required|image|mimes:jpeg,png,jpg|max:4048',
             'driving_licence_back' => 'required|image|mimes:jpeg,png,jpg|max:4048',
             'vehicle_registration' => 'required|image|mimes:jpeg,png,jpg|max:4048',
             'vehicle_insurance' => 'required|image|mimes:jpeg,png,jpg|max:4048',
+        ],[
+            "name.regex" => "The name can only contain letters and spaces.",
+            "driving_licence_front.required" => "The front side of the driving licence is required.",
+            "driving_licence_back.required" => "The back side of the driving licence is required.",
         ]);
         if ($validator->fails()) {
             return ApiResponse::validationResponse($validator->errors(), 422);
@@ -75,6 +103,7 @@ class AdminDriverController extends Controller
         } else {
             $driver = $existingDriverByPhone ?? $existingDriverByEmail ?? new Drivers();
         }
+        $password = Drivers::generatePassword();
         $driver->name = $request->name;
         $driver->email = $request->email;
         $driver->is_admin_approved = 1;
@@ -84,7 +113,7 @@ class AdminDriverController extends Controller
         $driver->email_verified_at = now();
         $driver->phone_verified_at = now();
         $driver->step_completed = 4;
-        $driver->password = Drivers::generatePassword();
+        $driver->password = $password;
         if ($request->has('profile_image') && !empty('profile_image')) {
             $uploadedFile = $request->file('profile_image');
             $fileName = rand() . '_' . time() . '.' . $uploadedFile->getClientOriginalExtension();
@@ -132,6 +161,9 @@ class AdminDriverController extends Controller
             $driverDocumnets->document = Storage::url('diver/documents/' . $fileName);
             $driverDocumnets->save();
         }
+        $subject = "Welcome to htchmail.";
+        $message = "Your Password is: ".  $password;
+        Mail::to($driver->email)->send(new EmailService($subject,$message,2));
         $response = [
             "redirect_url" => route("admin.get-driver-list")
         ];
@@ -140,20 +172,36 @@ class AdminDriverController extends Controller
     }
 
     public function editDrivers(Request $request){
-        $driver = Drivers::findOrFail(decrypt($request->driver_id));
-        return view("Admin.driver.edit", compact("driver"));
+        try{
+            $driver = Drivers::findOrFail(decrypt($request->driver_id));
+            return view("Admin.driver.edit", compact("driver"));    
+        } catch(DecryptException $ex){
+            Log::error($ex);
+            session()->flash("error", "Invalid driver id.");
+            return redirect()->back();
+        } catch(ModelNotFoundException $ex){
+            Log::error($ex);
+            session()->flash("error", "Driver not found.");
+            return redirect()->back();
+        } catch(Exception $ex){
+            Log::error($ex);
+            session()->flash("error", "Server Error.");
+            return redirect()->back();
+        }
     }
 
     public function editDriversPost(Request $request){
         $validator = Validator::make($request->all(), [
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:4048',
-            'name' => 'required|string|max:255',
-            'email' => 'required|email:rfc,dns|regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
-            'phone_number' => 'required|numeric|digits_between:8,15',
+            'name' => 'required|string|max:255|min:5|regex:/^[A-Za-z\s]+$/',
+            // 'email' => 'required|email:rfc,dns|regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+            // 'phone_number' => 'required|numeric|digits_between:8,15',
             'driving_licence_front' => 'nullable|image|mimes:jpeg,png,jpg|max:4048',
             'driving_licence_back' => 'nullable|image|mimes:jpeg,png,jpg|max:4048',
             'vehicle_registration' => 'nullable|image|mimes:jpeg,png,jpg|max:4048',
             'vehicle_insurance' => 'nullable|image|mimes:jpeg,png,jpg|max:4048',
+        ],[
+            "name.regex" => "The name can only contain letters and spaces.",
         ]);
         if ($validator->fails()) {
             return ApiResponse::validationResponse($validator->errors(), 422);
@@ -173,11 +221,11 @@ class AdminDriverController extends Controller
             ]);
         }
         $driver->name = $request->name;
-        $driver->email = $request->email;
+        // $driver->email = $request->email;
         $driver->is_admin_approved = 1;
         $driver->is_email_verified = 1;
         $driver->is_phone_verified = 1;
-        $driver->phone_number = $request->phone_number;
+        // $driver->phone_number = $request->phone_number;
         $driver->email_verified_at = now();
         $driver->phone_verified_at = now();
         $driver->password = Drivers::generatePassword();
@@ -236,8 +284,19 @@ class AdminDriverController extends Controller
     }
 
     public function viewDrivers(Request $request){
-        $driver = Drivers::findOrFail(decrypt($request->driver_id));
-        return view("Admin.driver.view", compact("driver"));   
+        try{
+            $driver = Drivers::findOrFail(decrypt($request->driver_id));
+            return view("Admin.driver.view", compact("driver"));   
+        } catch(DecryptException $ex){
+            session()->flash("error", "Invalid id passed.");
+            return redirect()->back();
+        } catch(ModelNotFoundException $ex){
+            session()->flash("error", "Driver not found.");
+            return redirect()->back();
+        } catch(Exception $ex){
+            session()->flash("error", "Server Error.");
+            return redirect()->back();
+        }
     }
 
     public function changeDriverStatus(Request $request){

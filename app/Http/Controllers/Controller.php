@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 
 /**
  * @OA\Info(
- *    title="Hitch Mail",
+ *    title="HUNKR APP",
  *    version="3.0.0",
- *   description="Auther: Vikas Chauhan",
+ *   description="Author: Vikas Chauhan",
  * )
  * @OA\SecurityScheme(
  *     type="http",

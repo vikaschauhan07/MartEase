@@ -62,10 +62,11 @@ class UserProfileController extends Controller
                 "id" => $user->id,
                 "name" => $user->name,
                 "email" => $user->email,
+                "phone_code" => (string) $user->phone_code,
                 "phone_number" => $user->phone_number,
                 "profile_image" => $user->profile_image ? asset($user->profile_image) : null,
-                "is_phone_verified" => $user->is_phone_verified,
-                "is_email_verified" => $user->is_email_verified
+                "is_email_verified" => $user->is_email_verified,
+                "is_password_set" => $user->is_password_set 
             ];
             $response = [
                 "user" => $userArray
@@ -158,6 +159,7 @@ class UserProfileController extends Controller
             $validator = Validator::make($request->all(), [
                 'email' => 'nullable|email:rfc,dns|regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
                 'phone_number' => 'nullable|numeric|digits_between:8,15',
+                "phone_code" => "nullable|numeric|digits_between:1,5",
                 'name' => "nullable|string|min:3|max:55|regex:/^[a-zA-Z\s]+$/",
                 'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:4048',
             ]);
@@ -166,7 +168,6 @@ class UserProfileController extends Controller
             }
             $user = Auth::guard("user")->user();
             $isEmailVerified = $user->is_email_verified;
-            $isNumberVerified = $user->is_phone_verified;
             if (isset($request->name) && !empty($request->name)) {
                 $user->name = $request->name;
             }
@@ -177,37 +178,20 @@ class UserProfileController extends Controller
                 }
                 if ($user->email != $request->email) {
                     $data = [
-                        "email" => $request->email,
-                        "phone_number" => null
+                        "email" => $request->email
                     ];
                     $isEmailVerified = ProjectConstants::EMAIL_NOT_VERIFIED;
                     $user->old_data = json_encode($data);
                     $emailOtp = $user->genrateEmailOtp();
-                    $subject = "Verification otp mail";
-                    Mail::to($request->email)->send(new EmailService($subject, $emailOtp));
+                    
+                    $subject = "Your One-Time Password (OTP) for email verification ";
+                    $name = $user->name;
+                    Mail::to($request->email)->send(new EmailService($subject, $name,$emailOtp));
                 }
             }
             if (isset($request->phone_number) && !empty($request->phone_number)) {
-                $existingCheck = User::where("phone_number", $request->phone_number)->first();
-                if ($existingCheck && $user->id != $existingCheck->id) {
-                    return ApiResponse::successResponse(null, "Phone Number is already taken.", ProjectConstants::BAD_REQUEST);
-                }
-                if ($user->phone_number != $request->phone_number) {
-                    $data = [
-                        "phone_number" => $request->phone_number,
-                        "email" => null
-                    ];
-                    if ($user->old_data) {
-                        $data = json_decode($user->old_data, true);
-                        $data = [
-                            "phone_number" => $request->phone_number,
-                            "email" => $data['email'] ?? null
-                        ];
-                    }
-                    $user->old_data = json_encode($data);
-                    $isNumberVerified = ProjectConstants::PHONE_NOT_VERIFIED;
-                    $phoneOtp = $user->genratePhoneOtp();
-                }
+                $user->phone_code = $request->phone_code;
+                $user->phone_number = $request->phone_number;
             }
             if ($request->has('profile_image') && !empty('profile_image')) {
                 $uploadedFile = $request->file('profile_image');
@@ -218,24 +202,20 @@ class UserProfileController extends Controller
                 "id" => $user->id,
                 "name" => $user->name,
                 "email" => $user->email,
+                "phone_code" => (string) $user->phone_code,
                 "phone_number" => $user->phone_number,
                 "profile_image" => $user->profile_image ? asset($user->profile_image) : null,
-                "is_phone_verified" => $isNumberVerified,
-                "is_email_verified" => $isEmailVerified
+                "is_email_verified" => $isEmailVerified,
+                "is_password_set" => $user->is_password_set 
             ];
             $response = [
                 "user" => $userArray
             ];
             $message = "User Profile Updated Successfully.";
-            if($isNumberVerified == 0) {
-                $message = "You need to verify your phone number.";
-            } else if($isEmailVerified == 0) {
+            if($isEmailVerified == 0) {
                 $message = "You need to verify your email address.";
             }
 
-            if($isNumberVerified == 0 && $isEmailVerified == 0){
-                $message = "You need to verify your phone and email address.";
-            }
             return ApiResponse::successResponse($response, $message, ProjectConstants::SUCCESS);
         } catch (Exception $ex) {
             Log::error($ex);
@@ -294,12 +274,15 @@ class UserProfileController extends Controller
                 'old_password' => 'required',
                 'new_password' => 'required|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$/',
                 'confirm_password' => 'required|same:new_password',
+            ],[
+                "new_password.regex" => "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character (e.g., @$!%*#?&), and must only include valid characters."
             ]);
             if ($validator->fails()) {
                 return ApiResponse::validationResponse($validator->errors()->all(), ProjectConstants::VALIDATION_ERROR);
             }
             if (Hash::check($request->old_password, $user->password)) {
                 $user->password = $request->new_password;
+                $user->is_password_set = 1;
                 $user->save();
                 return ApiResponse::successResponse([], "Password changed sucessfully.", ProjectConstants::SUCCESS);
             }
@@ -378,89 +361,6 @@ class UserProfileController extends Controller
         } catch (Exception $e) {
             Log::error($e);
             return ApiResponse::errorResponse([], "Server Error.", ProjectConstants::SERVER_ERROR);
-        }
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/api/v1/user/home",
-     *     summary="Get Home Data",
-     *     tags={"Home Page"},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Home Data Retrieved Successfully.",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="user", type="object", @OA\Property(property="name", type="string"), @OA\Property(property="profile_image", type="string")),
-     *             @OA\Property(property="dimensions", type="object",
-     *                 @OA\Property(property="small", type="object", 
-     *                     @OA\Property(property="area", type="integer"),
-     *                     @OA\Property(property="price", type="number")
-     *                 ),
-     *                 @OA\Property(property="medium", type="object", 
-     *                     @OA\Property(property="area", type="integer"),
-     *                     @OA\Property(property="price", type="number")
-     *                 ),
-     *                 @OA\Property(property="large", type="object", 
-     *                     @OA\Property(property="area", type="integer"),
-     *                     @OA\Property(property="price", type="number")
-     *                 )
-     *             ),
-     *             @OA\Property(property="home_video", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server Error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="Server Error")
-     *         )
-     *     )
-     * )
-     */
-    public function home(Request $request)
-    {
-        try {
-            $user = Auth::guard("user")->user();
-            $response = [
-                "user" => [
-                    "name" => $user->name ?? "GUEST",
-                    "profile_image" =>  $user && $user->profile_image ? asset($user->profile_image) : null,
-                ],
-                "dimensions" => [
-                    [
-                        "title" => "Extra Small",
-                        "type" => 1,
-                        "area" => 150,
-                        "price" => 5.99
-                    ],
-                    [
-                        "type" => 2,
-                        "title" => "Small",
-                        "area" => 300,
-                        "price" => 9.99
-                    ],
-                    [
-                        "type" => 3,
-                        "title" => "Medium",
-                        "area" => 1000,
-                        "price" => 14.99
-                    ],
-                    [
-                        "type" => 4,
-                        "title" => "Large",
-                        "area" => 2376,
-                        "price" => 18.99
-                    ]
-                ],
-                "home_video" => [
-                    "thumbnail" => asset("hitchmail.jpg"),
-                    "video" => asset("hitchmail.mp4"),
-                ]
-            ];
-            return ApiResponse::successResponse($response, "Home Data Got Successfully.", ProjectConstants::SUCCESS);
-        } catch (Exception $ex) {
-            Log::error($ex);
-            return ApiResponse::errorResponse(null, "Server Error", ProjectConstants::SERVER_ERROR);
         }
     }
 

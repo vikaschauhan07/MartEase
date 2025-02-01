@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Pickuppoints extends Model
+class Reports extends Model
 {
-    protected $table = "pickup_points";
+    protected $table = "reports";
 }

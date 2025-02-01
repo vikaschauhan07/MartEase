@@ -6,6 +6,7 @@ use App\Helpers\ApiResponse;
 use App\Helpers\ProjectConstants;
 use App\Http\Controllers\Controller;
 use App\Mail\EmailService;
+use App\Models\GetNotifiedEmails;
 use App\Models\User;
 use App\Models\UserOtps;
 use Exception;
@@ -104,28 +105,16 @@ class UserAuthController extends Controller
                 $user->device_type = $request->device_type;
                 $user->time_zone = $request->time_zone;
                 $user->save();
-                if ($user->is_phone_verified != ProjectConstants::PHONE_VERIFIED) {
-                    $emailOtp = $user->genrateEmailOtp();
-                    $phoneOtp = $user->genratePhoneOtp();
-                    $subject = "Verification otp mail";
-                    Mail::to($user->email)->send(new EmailService($subject, $emailOtp));
-                    $response = [
-                        "user_id" => encrypt($user->id),
-                        "is_phone_verified" => ProjectConstants::PHONE_NOT_VERIFIED,
-                        "is_email_verified" => ProjectConstants::EMAIL_NOT_VERIFIED
-                    ];
-                    return ApiResponse::successResponse($response, "Your phone and email is not verified", ProjectConstants::SUCCESS_WITH_CONDITION);
-                }
                 if ($user->is_email_verified != ProjectConstants::EMAIL_VERIFIED) {
                     $emailOtp = $user->genrateEmailOtp();
-                    $subject = "Verification otp mail";
-                    Mail::to($user->email)->send(new EmailService($subject, $emailOtp));
+                    $subject = "Your One-Time Password (OTP) for email verification ";
+                    $name = $user->name;
+                    Mail::to($user->email)->send(new EmailService($subject, $name, $emailOtp));
                     $response = [
                         "user_id" => encrypt($user->id),
-                        "is_phone_verified" => ProjectConstants::PHONE_VERIFIED,
                         "is_email_verified" => ProjectConstants::EMAIL_NOT_VERIFIED
                     ];
-                    return ApiResponse::successResponse($response, "Your email is not verified", ProjectConstants::SUCCESS_WITH_CONDITION);
+                    return ApiResponse::successResponse($response, "Your email is not verified", ProjectConstants::SUCCESS);
                 }
                 if ($user->status != 1) {
                     return ApiResponse::errorResponse(null, 'Your Account is not active. Please Contact admin', ProjectConstants::UNAUTHORIZED);
@@ -138,7 +127,8 @@ class UserAuthController extends Controller
                     "phone_number" => $user->phone_number,
                     "email" => $user->email,
                     "is_phone_verified" => $user->is_phone_verified,
-                    "is_email_verified" => $user->is_email_verified 
+                    "is_email_verified" => $user->is_email_verified,
+                    "is_password_set" => $user->is_password_set 
                 ];
                 $response = ["user" => $userArray, "access_token" => $token];
                 return ApiResponse::successResponse($response, "Logged In Successfully", ProjectConstants::SUCCESS);
@@ -165,7 +155,6 @@ class UserAuthController extends Controller
      *             @OA\Property(property="email", type="string", format="email", example="john@yopmail.com", description="User's email"),
      *             @OA\Property(property="phone_number", type="string", example="1234567890", description="User's phone number"),
      *             @OA\Property(property="password", type="string", format="password", example="P@ssw0rd!", description="User's password"),
-     *             @OA\Property(property="time_zone", type="string", description="Asia/Kolkata"),
      *             @OA\Property(property="device_type", type="integer", enum={1, 2}, example=1, description="1 for iOS, 2 for Android"),
      *             @OA\Property(property="terms_conditions", type="boolean", example=true, description="User's agreement to terms and conditions")
      *         )
@@ -205,10 +194,13 @@ class UserAuthController extends Controller
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|min:3|max:55|regex:/^[a-zA-Z\s]+$/',
                 'email' => 'required|email:rfc,dns|regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+                "phone_code" => "nullable|numeric|digits_between:1,5",
                 'phone_number' => 'required|numeric|digits_between:8,15',
                 'password' => 'required|string|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$/',
                 'device_type' => 'required|in:1,2',
                 'terms_conditions' => 'required|boolean',
+            ],[
+                "password.regex" => "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character (e.g., @$!%*#?&), and must only include valid characters."
             ]);
             if ($validator->fails()) {
                 return ApiResponse::validationResponse($validator->errors()->all(), ProjectConstants::VALIDATION_ERROR);
@@ -216,150 +208,34 @@ class UserAuthController extends Controller
             if (!$request->terms_conditions) {
                 return ApiResponse::errorResponse(null, "You must agree to the privacy policy.", ProjectConstants::VALIDATION_ERROR);
             }
-            $existingUserByPhone = User::where("phone_number", $request->phone_number)->first();
-            if ($existingUserByPhone && $existingUserByPhone->is_phone_verified) {
-                return ApiResponse::errorResponse(null, "Phone number is already taken.", ProjectConstants::BAD_REQUEST);
-            }
-            $existingUserByEmail = User::where("email", $request->email)->first();
-            if ($existingUserByEmail && $existingUserByEmail->is_email_verified) {
-                return ApiResponse::errorResponse(null, "Email is already taken.", ProjectConstants::BAD_REQUEST);
-            }
-            if ($existingUserByPhone && $existingUserByEmail) {
-                if (
-                    $existingUserByPhone->email !== $existingUserByEmail->email || 
-                    $existingUserByPhone->phone_number !== $existingUserByEmail->phone_number
-                ) {
-                    return ApiResponse::errorResponse(null, "User already exists.", ProjectConstants::BAD_REQUEST);
+            $user = new User();
+            $existingUserByEmail = User::where("email", $request->email)->where("is_email_verified", ProjectConstants::EMAIL_NOT_VERIFIED)->first();
+            if (!$existingUserByEmail) {
+                $validator = Validator::make($request->all(), [
+                    'email' => 'unique:users,email',
+                ]);
+                if ($validator->fails()) {
+                    return ApiResponse::validationResponse($validator->errors()->all(), ProjectConstants::VALIDATION_ERROR);
                 }
-                if ($existingUserByPhone->is_email_verified) {
-                    return ApiResponse::errorResponse(null, "User already exists.", ProjectConstants::BAD_REQUEST);
-                }
-                $user = $existingUserByPhone;
             } else {
-                $user = $existingUserByPhone ?? $existingUserByEmail ?? new User();
+                $user = $existingUserByEmail;
             }
             $user->name = $request->name;
             $user->email = $request->email;
+            $user->phone_code = $request->phone_code;
             $user->phone_number = $request->phone_number;
             $user->password = $request->password;
             $user->device_type = $request->device_type;
-            $user->time_zone = $request->time_zone;
             $user->is_email_verified = 0;
-            $user->is_phone_verified = 0;
             $user->save();
             $emailOtp = $user->genrateEmailOtp();
-            $phoneOtp = $user->genratePhoneOtp();
-            $subject = "Verification otp mail";
-            Mail::to($user->email)->send(new EmailService($subject, $emailOtp));
+            $subject = "Your One-Time Password (OTP) for email verification ";
+            $name = $user->name;
+            Mail::to($user->email)->send(new EmailService($subject, $name,$emailOtp));
             $response = [
                 "user_id" => encrypt($user->id)
             ];
             return ApiResponse::successResponse($response, "User register sucessfully.", ProjectConstants::SUCCESS);
-        } catch (Exception $ex) {
-            Log::error($ex);
-            return ApiResponse::errorResponse(null, "Server error", ProjectConstants::SERVER_ERROR);
-        }
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/v1/user/verify-phone-otp",
-     *     tags={"Authentication"},
-     *     summary="Verify phone OTP",
-     *     description="Verifies the user's phone number by matching the OTP.",
-     *     operationId="verifyPhoneOtp",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"user_id", "otp"},
-     *             @OA\Property(property="user_id", type="string", example="encrypted_user_id", description="The encrypted user ID"),
-     *             @OA\Property(property="otp", type="integer", example=1234, description="The 4-digit OTP for phone verification")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Phone number verified successfully.",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="data", type="object", 
-     *                 @OA\Property(property="user_id", type="string", example="encrypted_user_id")
-     *             ),
-     *             @OA\Property(property="message", type="string", example="Phone Number Verified Successfully.")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="OTP not matched",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="OTP Not Matched.")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="User not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="User not exists.")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="Server error")
-     *         )
-     *     )
-     * )
-     */
-    public function verifyPhoneOtp(Request $request)
-    {
-        try {
-            $user = Auth::guard("user")->user();
-            if(!$user){
-                $validator = Validator::make($request->all(), [
-                    'user_id' => 'required|string',
-                    'otp' => 'required|regex:/^[0-9]{4}$/'
-                ]);
-    
-                if ($validator->fails()) {
-                    return ApiResponse::validationResponse($validator->errors()->all(), ProjectConstants::VALIDATION_ERROR);
-                }
-                $user = User::findOrFail(decrypt($request->user_id));    
-            } else {
-                $validator = Validator::make($request->all(), [
-                    'otp' => 'required|regex:/^[0-9]{4}$/'
-                ]);
-                if ($validator->fails()) {
-                    return ApiResponse::validationResponse($validator->errors()->all(), ProjectConstants::VALIDATION_ERROR);
-                }
-            }
-            $userOtp = UserOtps::where(["user_id" => $user->id, "type" => ProjectConstants::PHONE_OTP])->first();
-            if (($userOtp->otp == $request->otp) || $request->otp == 1111) {
-                $user->is_phone_verified = ProjectConstants::PHONE_VERIFIED;
-                $user->phone_verified_at = now();
-                $user->save();
-                $response = [
-                    "user_id" => encrypt($user->id)
-                ];
-                if(Auth::guard("user")->user()){
-                    $data = json_decode($user->old_data, true);
-                    if(isset($data["phone_number"]) && !empty($data["phone_number"])){
-                        $user->phone_number = $data["phone_number"];
-                        $user->save();
-                    }
-                    return ApiResponse::successResponse(null, "Phone Number Verified Sucessfully.", ProjectConstants::SUCCESS);
-                }
-                return ApiResponse::successResponse($response, "Phone Number Verified Sucessfully.", ProjectConstants::SUCCESS);
-            }
-            return ApiResponse::errorResponse(null, "Opt Not Matched.", ProjectConstants::BAD_REQUEST);
-        } catch (DecryptException $ex) {
-            Log::error($ex);
-            return ApiResponse::errorResponse(null, "Invalid user Id.", ProjectConstants::SERVER_ERROR);
-        } catch (ModelNotFoundException $ex) {
-            Log::error($ex);
-            return ApiResponse::errorResponse(null, "User not exists.", ProjectConstants::NOT_FOUND);
         } catch (Exception $ex) {
             Log::error($ex);
             return ApiResponse::errorResponse(null, "Server error", ProjectConstants::SERVER_ERROR);
@@ -449,10 +325,11 @@ class UserAuthController extends Controller
                     "id" => $user->id,
                     "name" => $user->name,
                     "profile_image" => $user->profile_image ? asset($user->profile_image) : null,
+                    "phone_code" => (string) $user->phone_code,
                     "phone_number" => $user->phone_number,
                     "email" => $user->email,
-                    "is_phone_verified" => $user->is_phone_verified,
-                    "is_email_verified" => $user->is_email_verified
+                    "is_email_verified" => $user->is_email_verified,
+                    "is_password_set" => $user->is_password_set 
                 ];
                 if(Auth::guard("user")->user()){
                     $data = json_decode($user->old_data, true);
@@ -466,82 +343,6 @@ class UserAuthController extends Controller
                 return ApiResponse::successResponse($response, "Email Verified Sucessfully.", ProjectConstants::SUCCESS);
             }
             return ApiResponse::errorResponse(null, "OTP Not Matched.", ProjectConstants::BAD_REQUEST);
-        } catch (DecryptException $ex) {
-            Log::error($ex);
-            return ApiResponse::errorResponse(null, "Invalid user Id.", ProjectConstants::SERVER_ERROR);
-        } catch (ModelNotFoundException $ex) {
-            Log::error($ex);
-            return ApiResponse::errorResponse(null, "User not exists.", ProjectConstants::NOT_FOUND);
-        } catch (Exception $ex) {
-            Log::error($ex);
-            return ApiResponse::errorResponse(null, "Server error", ProjectConstants::SERVER_ERROR);
-        }
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/v1/user/resend-phone-otp",
-     *     tags={"Authentication"},
-     *     summary="Resend phone OTP",
-     *     description="Resends the phone OTP to the user's phone number.",
-     *     operationId="resendPhoneOtp",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"user_id"},
-     *             @OA\Property(property="user_id", type="string", example="encrypted_user_id", description="The encrypted user ID")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="OTP resent successfully.",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="data", type="object", 
-     *                 @OA\Property(property="user_id", type="string", example="encrypted_user_id")
-     *             ),
-     *             @OA\Property(property="message", type="string", example="OTP resent over your number.")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="User not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="User not exists.")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error or invalid user ID",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="Invalid user ID or Server error")
-     *         )
-     *     )
-     * )
-     */
-    public function resendPhoneOtp(Request $request)
-    {
-        try {
-            $user = Auth::guard("user")->user();
-            if(!$user){
-                $validator = Validator::make($request->all(), [
-                    'user_id' => 'required|string',
-                ]);
-                if ($validator->fails()) {
-                    return ApiResponse::validationResponse($validator->errors()->all(), ProjectConstants::VALIDATION_ERROR);
-                }
-                $user = User::findOrFail(decrypt($request->user_id));
-            }
-            $userPhoneOtp = $user->genratePhoneOtp();
-            $response = [
-                "user_id" => encrypt($user->id)
-            ];
-            if(Auth::guard("user")->user()){
-                return ApiResponse::successResponse(null, "Otp Resent over your number.", ProjectConstants::SUCCESS);
-            }
-            return ApiResponse::successResponse($response, "Otp Resent over your number.", ProjectConstants::SUCCESS);
         } catch (DecryptException $ex) {
             Log::error($ex);
             return ApiResponse::errorResponse(null, "Invalid user Id.", ProjectConstants::SERVER_ERROR);
@@ -613,13 +414,14 @@ class UserAuthController extends Controller
             $emailOtp = $user->genrateEmailOtp();
             $email = $user->email;
             $subject = "Verification otp email";
+            $name = $user->name;
             if(Auth::guard("user")->user()){
                 $data = json_decode($user->old_data, true);
                 if(isset($data["email"]) && !empty($data["email"])){
                     $email = $data["email"];
                 }
             }
-            Mail::to($email)->send(new EmailService($subject, $emailOtp));
+            Mail::to($email)->send(new EmailService($subject, $name, $emailOtp));
             $response = [
                 "user_id" => encrypt($user->id)
             ];
@@ -699,8 +501,9 @@ class UserAuthController extends Controller
             $user = User::where('email', $request->email)->first();
             if ($user) {
                 $emailOtp = $user->genrateEmailOtp();
-                $subject = "Verification otp mail";
-                Mail::to($user->email)->send(new EmailService($subject, $emailOtp));
+                $subject = "Your One-Time Password (OTP) for email verification ";
+                $name = $user->name;
+                Mail::to($user->email)->send(new EmailService($subject, $name, $emailOtp));
                 $response = [
                     "user_id" => encrypt($user->id)
                 ];
@@ -765,8 +568,9 @@ class UserAuthController extends Controller
             }
             $user = User::findOrFail(decrypt($request->user_id));
             $emailOtp = $user->genrateEmailOtp();
-            $subject = "Verification otp mail";
-            Mail::to($user->email)->send(new EmailService($subject, $emailOtp));
+            $subject = "Your One-Time Password (OTP) for email verification ";
+            $name = $user->name;
+            Mail::to($user->email)->send(new EmailService($subject, $name, $emailOtp));
             $response = [
                 "user_id" => encrypt($user->id)
             ];
@@ -926,6 +730,8 @@ class UserAuthController extends Controller
                 'password_token' => 'required|string',
                 'new_password' => 'required|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$/',
                 'confirm_password' => 'required|same:new_password',
+            ],[
+                "new_password.regex" => "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character (e.g., @$!%*#?&), and must only include valid characters."
             ]);
             if ($validator->fails()) {
                 return ApiResponse::validationResponse($validator->errors()->all(), ProjectConstants::VALIDATION_ERROR);
@@ -935,6 +741,7 @@ class UserAuthController extends Controller
                 return ApiResponse::errorResponse(null, "Invalid password reset token", ProjectConstants::BAD_REQUEST);
             }
             $user->password = $request->confirm_password;
+            $user->is_password_set = 1;
             $user->remember_token = null;
             $user->save();
             return ApiResponse::successResponse(null, "Password Changed Successfully.", ProjectConstants::SUCCESS);
@@ -949,4 +756,110 @@ class UserAuthController extends Controller
             return ApiResponse::errorResponse(null, "Internal server error.", ProjectConstants::SERVER_ERROR);
         }
     }
+
+    public function socialAuthentication(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'type' => 'required|integer|in:1,2',
+                "name" => 'nullable',
+                'jwt_token' => 'required'
+            ]);
+
+            if ($validator->fails()) {
+                return ApiResponse::validationResponse($validator->errors()->all(), ProjectConstants::VALIDATION_ERROR);
+            }
+            $email = null;
+            $user = null;
+            $type = $request->type;
+            $name = null;
+            if(isset($request->name) && !empty($request->name)){
+                $name = $request->name;
+            }
+            if($type == 1){
+                $jwt = $request->jwt_token;
+
+                list($headerEncoded, $payloadEncoded, $signatureEncoded) = explode('.', $jwt);
+        
+                $header = $this->base64UrlDecode($headerEncoded);
+                $headerJson = json_decode($header, true);
+        
+                $payload = $this->base64UrlDecode($payloadEncoded);
+                $payloadJson = json_decode($payload, true);
+        
+                $signature = $this->base64UrlDecode($signatureEncoded);
+        
+                $decodedToeknVariablesArray = [
+                    'header' => $headerJson,
+                    'payload' => $payloadJson,
+                    'signature' => base64_encode($signature)
+                ];
+        
+                array_walk_recursive($decodedToeknVariablesArray, function (&$item) {
+                    if (is_string($item)) {
+                        $item = utf8_encode($item);
+                    }
+                });
+                
+                $appleUniqueId = $payloadJson["sub"];
+                if(isset($payloadJson["email"])){
+                    $email = $payloadJson["email"];
+                    $user = User::where("email", $email)->first();
+                }
+
+                if(!$user){
+                    $user = User::where("unique_apple_id", $appleUniqueId)->first();
+                }
+
+                if(!$user){
+                    $user = new User();
+                    $user->email = $email;
+                    if($name){
+                        $user->name = $request->name;
+                    }
+                    $user->unique_apple_id = $appleUniqueId;
+                    $user->is_password_set = 0;
+                    $user->is_email_verified = 1;
+                    $user->save();
+                } else {
+                    $user->email = $email;
+                    $user->unique_apple_id = $appleUniqueId;
+                    if($name){
+                        $user->name = $request->name;
+                    }
+                    $user->is_email_verified = 1;
+                    $user->save();
+                }
+                $token = $user->createToken('NewLoginToken')->plainTextToken;
+                $userArray = [
+                    "id" => $user->id,
+                    "name" => $user->name,
+                    "profile_image" => $user->profile_image ? asset($user->profile_image) : null,
+                    "phone_number" => $user->phone_number,
+                    "email" => $user->email,
+                    "is_phone_verified" => $user->is_phone_verified,
+                    "is_email_verified" => $user->is_email_verified,
+                    "is_password_set" => $user->is_password_set 
+                ];
+                $response = ["user" => $userArray, "access_token" => $token];
+                return ApiResponse::successResponse($response, "Apple sign up success.", ProjectConstants::SUCCESS);
+            }
+            
+        } catch (Exception $ex) {
+            Log::error($ex);
+            return ApiResponse::errorResponse(null, "Internal server error.", ProjectConstants::SERVER_ERROR);
+        }
+    } 
+
+    private function base64UrlDecode($input)
+    {
+        $remainder = strlen($input) % 4;
+        if ($remainder) {
+            $padlen = 4 - $remainder;
+            $input .= str_repeat('=', $padlen);
+        }
+        return base64_decode(strtr($input, '-_', '+/'));
+    }
+
+    
 }

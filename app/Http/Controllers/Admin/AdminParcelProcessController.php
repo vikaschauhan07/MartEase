@@ -9,7 +9,13 @@ use App\Models\Packages;
 use App\Models\TrailerLoad;
 use App\Models\Trailers;
 use Illuminate\Http\Request;
-
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use Exception;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Storage;
 class AdminParcelProcessController extends Controller
 {
     public function index(Request $request){
@@ -34,13 +40,45 @@ class AdminParcelProcessController extends Controller
     }
 
     public function view(Request $request){
+        try{
         $package = Packages::with("packageImages","senderDetails","reciverDetails")->findOrFail(decrypt($request->package_id));
         $trailers = Trailers::where("is_locked", 0)->get();
         $assignTrailer = null;
         if(isset($request->trailer_id)){
             $assignTrailer = Trailers::findOrFail($request->trailer_id);
         }
-        return view("Admin.parcel-process.view",compact("package","trailers","assignTrailer"));   
+
+        $data = [
+            'senderName' => $package->senderDetails->name,
+            'senderAddress' => $package->senderDetails->address,
+            'receiverName' => $package->reciverDetails->name,
+            'receiverAddress' => $package->reciverDetails->address,
+            'referenceNumber' => $package->reference_number,
+            'qrCode' => asset('Admin/images/qr-code.jpg'), 
+        ];
+         $html = View::make('pages.slip', $data)->render();
+         $options = new Options();
+         $options->set('isHtml5ParserEnabled', true);
+         $options->set('isRemoteEnabled', true);
+         $dompdf = new Dompdf($options);
+         $dompdf->loadHtml($html);
+         $dompdf->setPaper('A4', 'portrait');
+         $dompdf->render();
+         $fileName = 'slip_' . $package->id . '.pdf';
+         $filePath = 'slips/' . $fileName;
+         Storage::disk('public')->put($filePath, $dompdf->output());
+         $fileUrl = asset(Storage::url($filePath));
+
+        return view("Admin.parcel-process.view",compact("package","trailers","assignTrailer","fileUrl"));  
+    }catch(DecryptException $ex){
+            Log::error($ex);
+            session()->flash("error", "Invalid Id.");
+            return redirect()->back();
+        } catch(Exception $ex){
+            Log::error($ex);
+            session()->flash("error", "Server Error.");
+            return redirect()->back();
+        }  
     }
 
     public function addParcelToTrailer(Request $request){

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\EmailService;
 use App\Models\Admin;
 use Exception;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,6 +27,19 @@ class AdminAuthController extends Controller
         return view('Admin.auth.login');
     }
 
+    public function test(){
+        try{
+
+        
+        $emailOtp = 4545;
+        $subject = "Your One-Time Password (OTP) for email verification ";
+        $name = "Test";
+        Mail::to("test@yopmail.com")->send(new EmailService($subject, $name, $emailOtp));
+        return "Success";
+    } catch(Exception $ex){
+        dd($ex);
+    }
+    }
     public function authenticate(Request $request)
     {
         try {
@@ -79,7 +93,7 @@ class AdminAuthController extends Controller
             ];
             $validator = Validator::make($request->all(), $rules, $messages);
             if ($validator->fails()) {
-                session()->flash("error", "Validation Error.");
+                // session()->flash("error", "Validation Error.");
                 return ApiResponse::validationResponse($validator->errors()->all(), ProjectConstants::VALIDATION_ERROR);
                 return redirect()->back()->withErrors($validator)->withInput();
             }
@@ -89,8 +103,9 @@ class AdminAuthController extends Controller
                 $admin->otp = $otp;
                 if ($admin->save()) {
                     $emailOtp = $otp;
-                    $subject = "Verification OTP mail";
-                    Mail::to($admin->email)->send(new EmailService($subject, $emailOtp));
+                    $subject = "Your One-Time Password (OTP) for email verification ";
+                    $name = $admin->name;
+                    Mail::to($admin->email)->send(new EmailService($subject, $name, $emailOtp));
                     session()->flash("success", "OTP sent over your mail.");
                     return ApiResponse::successResponse(["redirect_url" => route('admin.enter-otp', ['id' => encrypt($admin->id)])], "Otp sent over your mail",200);
                     // return redirect()->route('admin.enter-otp', ['id' => encrypt($admin->id)]);
@@ -110,6 +125,10 @@ class AdminAuthController extends Controller
             $id = decrypt($id);
             $user = Admin::findOrFail($id);
             return view('Admin.auth.enter-otp', compact('user'));
+        } catch(DecryptException $ex){
+            Log::error($ex);
+            session()->flash("error", "Invalid Id.");
+            return redirect()->back();
         } catch(ModelNotFoundException $ex){
             Log::error($ex);
             session()->flash("error", "Can't find user.");
@@ -129,11 +148,16 @@ class AdminAuthController extends Controller
             $admin->otp = $otp;
             if ($admin->save()) {
                 $emailOtp = $otp;
-                $subject = "Verification otp mail";
-                Mail::to($admin->email)->send(new EmailService($subject, $emailOtp));                   
+                $subject = "Your One-Time Password (OTP) for email verification ";
+                $name = $admin->name;
+                Mail::to($admin->email)->send(new EmailService($subject, $name, $emailOtp));                   
                 session()->flash("success", "OTP re-sent over your mail.");
                 return redirect()->back();
             }
+        } catch(DecryptException $ex){
+            Log::error($ex);
+            session()->flash("error", "Invalid Id.");
+            return redirect()->back();
         } catch(ModelNotFoundException $ex){
             Log::error($ex);
             session()->flash("error", "Can't find user.");
@@ -191,6 +215,10 @@ class AdminAuthController extends Controller
             }
             session()->flash("error", "Can't find restaurant.");
             return redirect()->route('admin.login');
+        } catch(DecryptException $ex){
+            Log::error($ex);
+            session()->flash("error", "Invalid Id.");
+            return redirect()->back();
         } catch (Exception $ex) {
             session()->flash("error", "Server Busy. Please Try Again");
             return redirect()->route('admin.login');
@@ -216,7 +244,7 @@ class AdminAuthController extends Controller
             $validator = Validator::make($request->all(), $rules, $messages);
 
             if ($validator->fails()) {
-                session()->flash("error", "Validation Error.");
+                // session()->flash("error", "Validation Error.");
                 return redirect()->back()->withErrors($validator)->withInput();
             }
 
@@ -238,6 +266,43 @@ class AdminAuthController extends Controller
             session()->flash("error", "Server Error.");
             return redirect()->route('admin.login');
         }
+    }
+
+    public function contactUs(Request $request){
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email:rfc,dns|regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,4}$/',
+            'phone' => 'nullable|string|max:255',
+            'subject' => 'nullable|string|max:255',
+            'description' => 'required|string|max:1000',
+        ], [
+            'name.required' => 'Please enter your name.',
+            'name.string' => 'Your name must contain only letters, numbers, and spaces.',
+            'name.max' => 'Your name should not exceed 255 characters.',
+        
+            'email.required' => 'Please enter your email address.',
+            'email.email' => 'Please provide a valid email address.',
+            'email.regex' => 'Please provide a valid email address (e.g., example@domain.com).',
+        
+            'phone.string' => 'Please enter a valid phone number.',
+            'phone.max' => 'Phone number should not exceed 255 characters.',
+        
+            'subject.string' => 'Please enter a valid subject.',
+            'subject.max' => 'Subject should not exceed 255 characters.',
+        
+            'description.required' => 'Please enter a message.',
+            'description.string' => 'Your message should be in text format.',
+            'description.max' => 'Your message should not exceed 1000 characters.',
+        ]);
+        
+        if ($validator->fails()) {
+            
+            session()->flash("warning", "Validation Error");
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+        session()->flash("success", 'Thank you for contacting us! We have received your message and will get back to you as soon as possible.');
+        return redirect()->route('admin.contact-us');
+        
     }
 
 }

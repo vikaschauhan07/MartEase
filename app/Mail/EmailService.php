@@ -16,15 +16,17 @@ class EmailService extends Mailable
 
     public $subject;
     public $content;
+    public $name;
     public $type;
     /**
      * Create a new message instance.
      */
-    public function __construct($subject, $content, $type = 1)
+    public function __construct($subject, $name,$content, $type = 1)
     {
         $this->subject = $subject;
         $this->content = $content;
         $this->type = $type;
+        $this->name = $name;
     }
 
     public function build()
@@ -32,17 +34,10 @@ class EmailService extends Mailable
         if($this->type == 1){
             return $this->subject($this->subject)
             ->view('mails.otp-mails')
-            ->with(['otp' => $this->content]);
-        } else if($this->type == 2) {
-            Log::error($this->content);
-            return $this->subject($this->subject)
-            ->view('mails.driver-verification')
-            ->with(['name' => $this->content]);
+            ->with(['otp' => $this->content, "name" => $this->name]);
         } else {
-            Log::error("df");
             return $this->subject($this->subject)
-            ->view('mails.driver-reject')
-            ->with(['reason' => $this->content]);
+            ->view('mails.get-notified');
         }
     }
 

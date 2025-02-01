@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\ApiResponse;
 use App\Helpers\AwsHelper;
 use App\Helpers\ProjectConstants;
 use App\Http\Controllers\Controller;
@@ -13,14 +14,48 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Packages;
+use App\Models\Trips;
+use App\Models\Trailers;
 
 class AdminDashboardController extends Controller
 {
     public function index(){
+        return view("Admin.employee.index");
         $userCount = User::where("status", 1)->count();
-        $driverCount = Drivers::where("is_admin_approved", 1)->count();
+        $driverCount = Drivers::get();
+        $packages = Packages::get();
+        $trips = Trips::get();
+        $trailer = Trailers::get();
+        $packageCounts = [
+            "pending" => $packages->where("status", 1)->count(),
+            "processed" => $packages->where("status", 2)->count(),
+            "delivered" => $packages->where("status", 5)->count(),
+            "calagaryPackages" =>[
+                "inTransit" => $packages->where("from_city", "Calgary")->where("status", 3)->count(),
+                "arrived" => $packages->where("to_city", "Calgary")->where("status", 4)->count(),
+            ],
+            "edmontonPackages" =>[
+                "inTransit" => $packages->where("from_city", "Edmonton")->where("status", 3)->count(),
+                "arrived" => $packages->where("to_city", "Edmonton")->where("status", 4)->count(),
+            ]
+        ];
+        $driverCount = [
+            "totalDriver" => $driverCount->where("step_completed", 4)->where("is_admin_approved", "!=", 2)->count(),
+            "approvedDriver" => $driverCount->where("is_admin_approved", 1)->count(),
+            "pendingDriver" => $driverCount->where("is_admin_approved", 0)->where("step_completed", 4)->count()
+        ];
 
-        return view("Admin.employee.index", compact("driverCount", "userCount"));
+        $tripCount = [
+            "tripCount" => $trips->count(),
+            "unbookedTrips" => $trips->whereNull("driver_id")->count()
+        ];
+
+        $trailerCount = [
+            "totalTrailer" => $trailer->count(),
+            "inTransitTrailer" => $trailer->where("status", 3)->count()
+        ];
+        return view("Admin.employee.index", compact("driverCount", "userCount", "packageCounts","tripCount","trailerCount"));
     }
     
     public function adminProfileChangeView(Request $request)
@@ -50,7 +85,7 @@ class AdminDashboardController extends Controller
         try {
             $rules = [
                 'profile_pic' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:4048',
-                'name' => 'required|string|min:5|max:50|regex:/^[a-zA-Z\s]+$/',
+                'name' => 'required|string|min:5|max:35|regex:/^[a-zA-Z\s]+$/',
             ];
             $messages = [
                 'profile_pic.image' => 'The selected file must be an image (.jpeg, .png, .jpg, or .gif).',
@@ -64,14 +99,11 @@ class AdminDashboardController extends Controller
             ];
             $validator = Validator::make($request->all(), $rules, $messages);
             if ($validator->fails()) {
-                session()->flash("error", "Validation Error.");
+                // session()->flash("error", "Validation Error.");
                 return redirect()->back()->withErrors($validator)->withInput();
             }
             $admin = Auth::guard('admin')->user();
-            if (empty($admin)) {
-                session()->flash("error", "Unautherised");
-                return redirect()->back();
-            }
+
             $admin->name = $request->name;
             if ($request->has('profile_pic') && !empty('profile_pic')) {
                 $uploadedFile = $request->file('profile_pic');
@@ -105,27 +137,19 @@ class AdminDashboardController extends Controller
             ];
             $validator = Validator::make($request->all(), $rules, $messages);
             if ($validator->fails()) {
-                session()->flash("error", "Validation Error.");
-                return redirect()->back()->withErrors($validator)->withInput();
+                return ApiResponse::validationResponse($validator->errors(), 422);
             }
             $admin = Auth::guard('admin')->user();
-            if (empty($admin)) {
-                session()->flash("error", "Unautherised");
-                return redirect()->back();
-            }
             if (Hash::check($request->old_password, $admin->password)) {
                 $admin->password = $request->new_password;
-                if ($admin->save()) {
-                    session()->flash('success', 'Password updated successfully');
-                    return redirect()->back();
-                }
+                $admin->save();
+                session()->flash("success", "Password updated successfully");
+                return ApiResponse::successResponse(null, 'Password updated successfully', 200);
             }
-            session()->flash("error", "Old Password not Matched.Please try again.");
-            return redirect()->back();
+            return ApiResponse::errorResponse(null, "Old Password not Matched.Please try again.", 400);
         } catch (Exception $ex) {
             Log::error($ex);
-            session()->flash("error", "Server Busy.");
-            return redirect()->back();
+            return ApiResponse::errorResponse(null, "Server Error.", 500);
         }
     }
 
