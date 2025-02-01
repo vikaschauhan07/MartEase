@@ -6,9 +6,14 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
-        "laravel/framework": "^11.31",
-        "laravel/tinker": "^2.9"
+        "php": "^8.3",
+        "darkaonline/l5-swagger": "^8.6",
+        "laravel/framework": "^11.9",
+        "laravel/sanctum": "^4.0",
+        "laravel/tinker": "^2.9",
+        "league/flysystem-aws-s3-v3": "^3.29",
+        "opcodesio/log-viewer": "^3.11",
+        "symfony/mailer": "^7.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
