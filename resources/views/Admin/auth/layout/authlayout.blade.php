@@ -16,7 +16,7 @@
 <body>
     <section>
         <div class="owerflow_hidden position-relative">
-        <img src="{{ asset('Admin/images/Login.svg') }}" alt="" class="img-fluid loginBg">
+        <img src="{{ asset('Admin/images/login.svg') }}" alt="" class="img-fluid loginBg">
            <div class="fixed_container">
            <div class="row">
                 <div class="col-md-6 full_height item_center p-xl-0 p-4 mobile_bg">
