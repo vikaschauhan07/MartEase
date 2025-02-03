@@ -21,9 +21,9 @@
             </div>
             <span class="text-danger validations" id="password-error"></span>
             <div class="w-100 text-end mb-3 mb-lg-4">
-                <a href="{{ route('admin.forget-password') }}" class="forgotPassword">
+                <!-- <a href="{{ route('admin.forget-password') }}" class="forgotPassword">
                     Forgot Password?
-                </a>
+                </a> -->
             </div>
             <button class="login_btn w-100" type="submit" id="loginMe">Sign In</button>
         </form>
