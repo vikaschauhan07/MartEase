@@ -15,7 +15,8 @@ use App\Http\Middleware\AuthenticateAdmin;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view("welcome");
+    // return view("welcome");
+    return redirect()->route("admin.login");
 })->name("web.landing");
 Route::get('/privacy-policy', function () {
     return view('pages.privacy');
