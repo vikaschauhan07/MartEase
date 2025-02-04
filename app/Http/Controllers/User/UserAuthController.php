@@ -126,6 +126,7 @@ class UserAuthController extends Controller
                     "profile_image" => $user->profile_image ? asset($user->profile_image) : null,
                     "phone_number" => $user->phone_number,
                     "email" => $user->email,
+                    "is_user" => 1, 
                     "is_phone_verified" => $user->is_phone_verified,
                     "is_email_verified" => $user->is_email_verified,
                     "is_password_set" => $user->is_password_set 
@@ -328,6 +329,7 @@ class UserAuthController extends Controller
                     "phone_code" => (string) $user->phone_code,
                     "phone_number" => $user->phone_number,
                     "email" => $user->email,
+                    "is_user" => 1, 
                     "is_email_verified" => $user->is_email_verified,
                     "is_password_set" => $user->is_password_set 
                 ];

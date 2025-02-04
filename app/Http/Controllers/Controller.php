@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 
 /**
  * @OA\Info(
- *    title="HUNKR APP",
+ *    title="MartEase APP",
  *    version="3.0.0",
  *   description="Author: Vikas Chauhan",
  * )
