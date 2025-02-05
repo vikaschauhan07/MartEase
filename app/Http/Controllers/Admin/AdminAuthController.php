@@ -30,7 +30,7 @@ class AdminAuthController extends Controller
     public function test(){
         try{
 
-        
+        return view('Martease');
         $emailOtp = 4545;
         $subject = "Your One-Time Password (OTP) for email verification ";
         $name = "Test";
