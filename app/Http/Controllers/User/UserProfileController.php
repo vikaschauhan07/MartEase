@@ -62,6 +62,7 @@ class UserProfileController extends Controller
                 "id" => $user->id,
                 "name" => $user->name,
                 "email" => $user->email,
+                "is_user" => 1, 
                 "phone_code" => (string) $user->phone_code,
                 "phone_number" => $user->phone_number,
                 "profile_image" => $user->profile_image ? asset($user->profile_image) : null,
