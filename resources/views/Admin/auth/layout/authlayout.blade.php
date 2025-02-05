@@ -19,9 +19,9 @@
         <img src="{{ asset('Admin/images/login.svg') }}" alt="" class="img-fluid loginBg">
            <div class="fixed_container">
            <div class="row">
-                <!-- <div class="col-md-6 full_height item_center p-xl-0 p-4 mobile_bg">
-                    <img src="{{ asset('Admin/images/sidebar-logo.svg') }}" alt="" class="img-fluid login_logo"> 
-                </div> -->
+                <div class="col-md-6 full_height item_center p-xl-0 p-4 mobile_bg">
+                    <img src="{{ asset('Admin/images/logo.svg') }}" alt="" class="img-fluid login_logo"> 
+                </div>
                 <div class="col-md-6 item_center  mobile_form_bg">
                     {{-- Auth content --}}
                         @yield('contents')
