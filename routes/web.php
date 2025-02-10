@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminParcelProcessController;
 use App\Http\Controllers\Admin\AdminPickupPointController;
 use App\Http\Controllers\Admin\AdminTrailerController;
+use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\User\UserAuthController;
 use App\Http\Middleware\AuthenticateAdmin;
 use Illuminate\Support\Facades\Route;
@@ -72,6 +73,16 @@ Route::group(['prefix' => 'admin'],function () {
             Route::post('/upload-file', [AdminBlogController::class, 'uploadFile'])->name('admin.upload-file');            
             Route::get('/view', [AdminBlogController::class, 'viewBlogDetails'])->name('admin.view-blog');
             Route::get('/edit', [AdminBlogController::class, 'editBlog'])->name('admin.edit-blog');
+            Route::get('/change-blog-status',[AdminBlogController::class, "changeBlogStatus"])->name("admin.blog-status-change");
+            Route::get('/delete',[AdminBlogController::class, "deleteBlog"])->name("admin.delete-blog");
+        });
+
+        Route::group(['prefix' => 'categorys'],function () {
+            Route::get('/', [AdminCategoryController::class, 'getAllCategorys'])->name('admin.get-all-category');
+            Route::get('/add', [AdminCategoryController::class, 'addCategory'])->name('admin.add-category');
+            Route::post('/add', [AdminCategoryController::class, 'addCategoryPost'])->name('admin.add-category-post');        
+            Route::get('/view', [AdminCategoryController::class, 'viewCategoryDetails'])->name('admin.view-category');
+            Route::get('/edit', [AdminCategoryController::class, 'editCategory'])->name('admin.edit-category');
             Route::get('/change-blog-status',[AdminBlogController::class, "changeBlogStatus"])->name("admin.blog-status-change");
             Route::get('/delete',[AdminBlogController::class, "deleteBlog"])->name("admin.delete-blog");
         });

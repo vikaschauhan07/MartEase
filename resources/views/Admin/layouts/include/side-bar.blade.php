@@ -40,6 +40,14 @@
                         </span>
                     </a>
                 </li>
+                <li class="nav-item {{ request()->is('admin/categorys*') ? ' active' : '' }}">
+                    <a href="{{ route('admin.get-all-category') }}" class="nav-link">
+                        <img src="{{asset('Admin/images/sidebar-44.svg')}}" alt="sidebar-icon" class="sidebar_icon">
+                        <span>
+                            Category Management
+                        </span>
+                    </a>
+                </li>
             </ul>
         </nav>
     </div>
