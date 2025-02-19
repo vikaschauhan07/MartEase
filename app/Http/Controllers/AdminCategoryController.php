@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-
 class AdminCategoryController extends Controller
 {
     public function getAllCategorys(Request $request){
@@ -75,5 +74,10 @@ class AdminCategoryController extends Controller
     public function editCategory(Request $request){
         $category = Categorys::findorFail(decrypt($request->category_id));
         return view("Admin.category.edit", compact("category"));
+    }
+
+    public function getAllCategorysApi(Request $request){
+        $categorys = Categorys::select('id', 'name', 'description', 'image')->paginate(10);
+        return ApiResponse::successResponse($categorys , "Category got successfully.",200);
     }
 }

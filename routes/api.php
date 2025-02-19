@@ -8,6 +8,8 @@ use App\Http\Controllers\User\UserPostController;
 use App\Http\Controllers\User\UserProfileController;
 use App\Http\Middleware\AuthenticateUser;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminCategoryController;
+
 
 Route::group(['prefix' => 'v1'],function () {
 
@@ -49,6 +51,9 @@ Route::group(['prefix' => 'v1'],function () {
             // Blog apis
             Route::get("/get-all-blogs", [UserBlogController::class, "getAllBlogs"]);
             
+            Route::group(['prefix' => 'categorys'],function () {
+                Route::get('/', [AdminCategoryController::class, 'getAllCategorysApi']);
+            });    
             // Post Apis
             Route::get("/get-issues-list", [UserPostController::class, "getReportIssuesList"]);
             Route::post("/create-post", [UserPostController::class, "createPost"]);
