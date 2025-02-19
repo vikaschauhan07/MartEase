@@ -52,7 +52,7 @@ Route::group(['prefix' => 'v1'],function () {
             Route::get("/get-all-blogs", [UserBlogController::class, "getAllBlogs"]);
             
             Route::group(['prefix' => 'categorys'],function () {
-                Route::get('/all', [AdminCategoryController::class, 'getAllCategorysApi']);
+                Route::get('/', [AdminCategoryController::class, 'getAllCategorysApi']);
             });    
             // Post Apis
             Route::get("/get-issues-list", [UserPostController::class, "getReportIssuesList"]);

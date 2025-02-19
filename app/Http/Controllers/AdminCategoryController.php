@@ -78,6 +78,13 @@ class AdminCategoryController extends Controller
 
     public function getAllCategorysApi(Request $request){
         $categorys = Categorys::select('id', 'name', 'description', 'image')->paginate(10);
-        return ApiResponse::successResponse($categorys , "Category got successfully.",200);
+    
+        $categorys->getCollection()->transform(function ($category) {
+            $category->image = asset($category->image);
+            return $category;
+        });
+    
+        return ApiResponse::successResponse($categorys, "Category got successfully.", 200);
     }
+    
 }
