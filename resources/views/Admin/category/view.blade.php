@@ -9,8 +9,8 @@
                 <div class="d-flex flex-wrap gap-2">
                     <a href="{{route('admin.add-category')}}" class="add_btn text-decoration-none">Add New Category</a>
                     @if($category->is_admin_approved == 0)
-                        <a href="{{route('admin.add-category')}}" class="add_btn text-decoration-none">Approve Category</a>
-                        <a href="{{route('admin.add-category')}}" class="add_btn text-decoration-none">Reject Category</a>
+                        <a href="" class="add_btn text-decoration-none" onclick="confirmApprove('{{ route('admin.approve-category', ['category_id' => encrypt($category->id)]) }}')">Approve Category</a>
+                        <a href="" class="add_btn text-decoration-none">Reject Category</a>
                     @else
                         <a href="{{route('admin.edit-category',['category_id'=>encrypt($category->id)])}}" class="add_btn text-decoration-none">Edit Category</a>
                     @endif
@@ -38,7 +38,7 @@
     </div>
 </div>
 <script>
-    function confirmDelete(deleteUrl) {
+    function confirmApprove(deleteUrl) {
         Swal.fire({
             title: 'Are you sure?',
             text: "You won't be able to revert this!",
@@ -46,7 +46,7 @@
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonText: 'Yes, Approve it!'
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = deleteUrl; 

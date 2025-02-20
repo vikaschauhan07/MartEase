@@ -32,6 +32,7 @@ class AdminCategoryController extends Controller
     }
 
     
+    
     public function addCategoryPost(Request $request){
         try{
             $validator = Validator::make($request->all(), [
@@ -119,7 +120,7 @@ class AdminCategoryController extends Controller
                 // }
             }
             $category->is_requested = 1;
-            $category->is_requested = $user->id;
+            $category->created_by = $user->id;
             $category->description = $request->description;
             $category->save();
             $response = [
@@ -134,5 +135,13 @@ class AdminCategoryController extends Controller
             Log::error($ex);
             return ApiResponse::errorResponse(null, "Server Error.", 500);
         }
+    }
+    public function reactCategory(Request $request){
+        $category = Categorys::findOrFail($request->category_id);
+        $category->is_admin_approved = 1;
+        $category->status = 1;
+        $category->save();
+        session()->flash("success", "Category Approved Successfully.");
+        return redirect()->route('admin.get-all-category');
     }
 }
