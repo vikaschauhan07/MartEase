@@ -19,6 +19,11 @@
                     <p class="login_input paddingStartInput w-100"> {{$category->name}}</p>
                 </div>
             </div>
+            <div class="col-lg-12 mb-3 mb-lg-4">
+                <div class="position-relative">
+                    <p class="login_input paddingStartInput w-100"> {{$category->description}}</p>
+                </div>
+            </div>
             <div class="col-lg-12 mb-3 mb-lg-4">    
                 <span class="pip">
                     <img class="imageThumb" src="{{$category->image}}">
