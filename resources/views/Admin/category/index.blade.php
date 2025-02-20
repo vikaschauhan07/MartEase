@@ -10,7 +10,10 @@
                     <a href="{{route('admin.add-category')}}" class="add_btn text-decoration-none">Add Category</a>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
-                    <a href="{{route('admin.add-blog')}}" class="add_btn text-decoration-none">Requested Category</a>
+                    <a href="{{route('admin.get-all-category')}}" class="add_btn text-decoration-none @if($isRequested == 0) active @endif">App Category</a>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{route('admin.get-all-category',['isRequested' => 1])}}" class="add_btn text-decoration-none @if($isRequested == 1) active @endif">Requested Category</a>
                 </div>
             </div>
             <div class="d-flex gap-2 flex-wrap">

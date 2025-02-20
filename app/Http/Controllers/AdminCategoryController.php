@@ -17,9 +17,14 @@ class AdminCategoryController extends Controller
 {
     public function getAllCategorys(Request $request){
         $status = 1;
+        $isRequested = $request->isRequested ?? 0;
         $search = '';
-        $categorys = Categorys::paginate(10);
-        return view("Admin.category.index",compact("status","categorys","search"));
+        $categorys = Categorys::where("is_admin_approved", 1)->paginate(10);
+        if(isset($request->is_requested) && $request->is_requested == 1){
+            $categorys = Categorys::paginate(10);
+            return view("Admin.category.index",compact("status","categorys","search","isRequested"));
+        }
+        return view("Admin.category.index",compact("status","categorys","search","isRequested"));
     }
 
     public function addCategory(Request $request){
@@ -78,7 +83,7 @@ class AdminCategoryController extends Controller
     }
 
     public function getAllCategorysApi(Request $request){
-        $categorys = Categorys::select('id', 'name', 'description', 'image')->paginate(10);
+        $categorys = Categorys::where("is_admin_approved", 1)->select('id', 'name', 'description', 'image')->paginate(10);
     
         $categorys->getCollection()->transform(function ($category) {
             $category->image = asset($category->image);
@@ -97,7 +102,7 @@ class AdminCategoryController extends Controller
                 'description' => 'required|string|min:10|max:255'
             ]);
             if ($validator->fails()) {
-                return ApiResponse::validationResponse($validator->errors(), ProjectConstants::VALIDATION_ERROR);
+                return ApiResponse::validationResponse($validator->errors()->all(), ProjectConstants::VALIDATION_ERROR);
             }
             $user = Auth::guard("user")->user();
             $category = new Categorys();
