@@ -2,6 +2,12 @@
 @section('title') Blogs @endsection
 @section('page-title') Blogs Management @endsection
 @section('content')
+<style>
+    .active {
+        background: white;
+        color: red !important;
+    }
+</style>
 <div class="container-fluid">
     <div class="table_box mb-3">
         <div class="py-2 pb-4 d-flex justify-content-between flex-wrap">
@@ -10,9 +16,7 @@
                     <a href="{{route('admin.add-category')}}" class="add_btn text-decoration-none">Add Category</a>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
-                    <a href="{{route('admin.get-all-category')}}" class="add_btn text-decoration-none @if($isRequested == 0) active @endif">App Category</a>
-                </div>
-                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{route('admin.get-all-category')}}" class="add_btn text-decoration-none me-2 @if($isRequested == 0) active @endif">App Category</a>
                     <a href="{{route('admin.get-all-category',['isRequested' => 1])}}" class="add_btn text-decoration-none @if($isRequested == 1) active @endif">Requested Category</a>
                 </div>
             </div>
