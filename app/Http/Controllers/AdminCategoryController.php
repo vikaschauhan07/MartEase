@@ -137,7 +137,7 @@ class AdminCategoryController extends Controller
         }
     }
     public function reactCategory(Request $request){
-        $category = Categorys::findOrFail($request->category_id);
+        $category = Categorys::findOrFail(decrypt($request->category_id));
         $category->is_admin_approved = 1;
         $category->status = 1;
         $category->save();
