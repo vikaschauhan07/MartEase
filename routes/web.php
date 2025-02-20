@@ -85,7 +85,7 @@ Route::group(['prefix' => 'admin'],function () {
             Route::get('/edit', [AdminCategoryController::class, 'editCategory'])->name('admin.edit-category');
             Route::get('/change-blog-status',[AdminBlogController::class, "changeBlogStatus"])->name("admin.blog-status-change");
             Route::get('/delete',[AdminBlogController::class, "deleteBlog"])->name("admin.delete-blog");
-            Route::get('/', [AdminCategoryController::class, 'reactCategory'])->name('admin.approve-category');
+            Route::get('/approve', [AdminCategoryController::class, 'reactCategory'])->name('admin.approve-category');
 
         });
     
