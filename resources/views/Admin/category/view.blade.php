@@ -9,7 +9,7 @@
                 <div class="d-flex flex-wrap gap-2">
                     <a href="{{route('admin.add-category')}}" class="add_btn text-decoration-none">Add New Category</a>
                     @if($category->is_admin_approved == 0)
-                        <a href="" class="add_btn text-decoration-none" onclick="confirmApprove('{{ route('admin.approve-category', ['category_id' => encrypt($category->id)]) }}')">Approve Category</a>
+                        <a href="" class="add_btn text-decoration-none" onclick="confirmApprove(event,'{{ route('admin.approve-category', ['category_id' => encrypt($category->id)]) }}')">Approve Category</a>
                         <a href="" class="add_btn text-decoration-none">Reject Category</a>
                     @else
                         <a href="{{route('admin.edit-category',['category_id'=>encrypt($category->id)])}}" class="add_btn text-decoration-none">Edit Category</a>
@@ -38,7 +38,8 @@
     </div>
 </div>
 <script>
-    function confirmApprove(deleteUrl) {
+    function confirmApprove(event, deleteUrl) {
+        event.preventDefault();
         Swal.fire({
             title: 'Are you sure?',
             text: "You won't be able to revert this!",
