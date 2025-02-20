@@ -20,7 +20,7 @@ class AdminCategoryController extends Controller
         $isRequested = $request->isRequested ?? 0;
         $search = '';
         $categorys = Categorys::where("is_admin_approved", 1)->paginate(10);
-        if(isset($request->is_requested) && $request->is_requested == 1){
+        if(isset($request->isRequested) && $request->isRequested == 1){
             $categorys = Categorys::where("is_admin_approved", 0)->paginate(10);
             return view("Admin.category.index",compact("status","categorys","search","isRequested"));
         }
