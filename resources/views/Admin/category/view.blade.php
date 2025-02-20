@@ -8,7 +8,12 @@
             <div class="d-flex">
                 <div class="d-flex flex-wrap gap-2">
                     <a href="{{route('admin.add-category')}}" class="add_btn text-decoration-none">Add New Category</a>
-                    <a href="{{route('admin.edit-category',['category_id'=>encrypt($category->id)])}}" class="add_btn text-decoration-none">Edit Category</a>
+                    @if($category->is_admin_approved == 0)
+                        <a href="{{route('admin.add-category')}}" class="add_btn text-decoration-none">Approve Category</a>
+                        <a href="{{route('admin.add-category')}}" class="add_btn text-decoration-none">Reject Category</a>
+                    @else
+                        <a href="{{route('admin.edit-category',['category_id'=>encrypt($category->id)])}}" class="add_btn text-decoration-none">Edit Category</a>
+                    @endif
                     {{-- <a href="javascript:void(0);" class="add_btn text-decoration-none" onclick="confirmDelete('{{ route('admin.delete-blog', ['blog_id' => encrypt($category->id)]) }}')">Delete Category</a> --}}
                 </div>
             </div>

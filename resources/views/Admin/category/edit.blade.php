@@ -20,7 +20,7 @@
             <div class="col-lg-12 mb-3 mb-lg-4">
                 <div class="position-relative">
                     <label class="login_label" for="">Category Description</label>
-                    <input class="login_input paddingStartInput w-100" id="description" type="text" placeholder="Enter Description" required>
+                    <input class="login_input paddingStartInput w-100" id="description" value="{{$category->description}}" type="text" placeholder="Enter Description" required>
                 </div>
             </div>
             <span class="text-danger validations" id="description-error"></span>
