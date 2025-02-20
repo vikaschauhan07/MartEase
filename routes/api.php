@@ -53,6 +53,7 @@ Route::group(['prefix' => 'v1'],function () {
             
             Route::group(['prefix' => 'categorys'],function () {
                 Route::get('/', [AdminCategoryController::class, 'getAllCategorysApi']);
+                Route::post('/request', [AdminCategoryController::class, 'requestCategory'])->name('admin.add-category-post');        
             });    
             // Post Apis
             Route::get("/get-issues-list", [UserPostController::class, "getReportIssuesList"]);
