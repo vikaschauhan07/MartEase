@@ -48,9 +48,9 @@ return [
             'driver' => 'sanctum',
             'provider' => 'users',
         ],
-        'drivers' => [
+        'seller' => [
             'driver' => 'sanctum',
-            'provider' => 'drivers',
+            'provider' => 'seller',
         ],
     ],
 
@@ -80,9 +80,9 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\Admin::class),
         ],
-        'drivers' => [
+        'seller' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\Drivers::class),
+            'model' => env('AUTH_MODEL', App\Models\Sellers::class),
         ],
 
         // 'users' => [

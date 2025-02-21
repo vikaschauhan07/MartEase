@@ -9,10 +9,31 @@ use App\Http\Controllers\User\UserProfileController;
 use App\Http\Middleware\AuthenticateUser;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminCategoryController;
-
+use App\Http\Controllers\User\UserSwitchUserCntroller;
+use App\Http\Middleware\AuthenticateSeller;
 
 Route::group(['prefix' => 'v1'],function () {
 
+    Route::get("/switch-to-seller", [UserSwitchUserCntroller::class, "switchToSeller"]);
+    
+    Route::group(['prefix' => 'seller'],function () { 
+        Route::middleware([AuthenticateSeller::class])->group(function () { 
+            Route::get("/log-out", [UserProfileController::class, "userLogOut"]);
+            Route::get("/delete-my-account", [UserProfileController::class, "deleteMyAccount"]);
+            
+            Route::group(['prefix' => 'profile'],function () { 
+                Route::get("/", [UserProfileController::class, "getMyProfile"]);
+                Route::post("/update", [UserProfileController::class, "updateProfile"]);  
+                Route::post("/change-password", [UserProfileController::class, "updatePassword"]);  
+            });
+            
+            Route::group(['prefix' => 'categorys'],function () {
+                Route::get('/', [AdminCategoryController::class, 'getAllCategorysApi']);
+                Route::post('/request', [AdminCategoryController::class, 'requestCategory'])->name('admin.add-category-post');        
+            }); 
+        });
+    });
+    
     Route::group(['prefix' => 'user'],function () {
         Route::post("/authenticate",[UserAuthController::class, "authenticate"]);
         Route::post("/register",[UserAuthController::class, "register"]);
