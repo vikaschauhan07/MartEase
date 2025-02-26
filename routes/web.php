@@ -26,6 +26,10 @@ Route::get('/terms-condition', function () {
     return view('pages.terms');
 })->name('admin.terms-condition');
 
+Route::get('/delete-account', function () {
+    return view('pages.delete-account');
+})->name('admin.delete-account');
+
 Route::get('/contact-us', function () {
     return view('pages.contact-us');
 })->name('admin.contact-us');
