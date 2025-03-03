@@ -424,7 +424,7 @@
                 <footer>
                     <div class="ss-copyright">
                         <span>© Copyright Martease. 2025</span>
-                        <span>Design by <a href="https://github.com/ritshkr1">Ritesh</a></span>
+                        <!-- <span>Design by <a href="https://github.com/ritshkr1">Ritesh</a></span> -->
                     </div>
                 </footer>
 
