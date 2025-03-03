@@ -1,264 +1,457 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="no-js" lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
-    integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p"
-    crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
-    integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF"
-    crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- <link rel="icon" type="image/x-icon" href="{{asset("landing/images/favicon.svg")}}"> -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-    <!-- Toastr JS -->
-    <link rel="stylesheet" href="{{asset('landing/css/style.css')}}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <title>Hunkr</title>
+    <!--- basic page needs
+    ================================================== -->
+    <meta charset="utf-8">
+    <title>Martease.</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- mobile specific metas
+    ================================================== -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- CSS
+    ================================================== -->
+    <link rel="stylesheet" href="{{asset('landing/css/vendor.css')}}">
+    <link rel="stylesheet" href="{{asset('landing/css/styles.css')}}">
+
+    <!-- favicons
+    ================================================== -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{{asset('landing/images/apple-touch-icon.png')}}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{asset('landing/images/favicon-32x32.png')}}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{asset('landing/images/favicon-16x16.png')}}">
+    <link rel="manifest" href="site.webmanifest">
+
 </head>
 
-<body>
-    <div class="video-background">
-        <video autoplay muted loop playsinline>
-            <source src="{{asset('landing/images/shutterstock_1110960941 (1).mp4')}}" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    </div>
-    <div class="fade_content">
-        <div class="container">
-            <div class="content">
-                <img class="logo img-fluid" src="{{asset('landing/images/main-logo.svg')}}" alt="logo">
-                <h1 class="landingPage_heading">Our product <br>
-                    is launching soon
-                </h1>
-                <p class="landingPage_content">We have something coming that is going to blow you away. Below is a sneak
-                    peek of what we offer. Check back
-                    often for our launch.
-                </p>
-                <div class="time_box">
-                    <div class="time_count">
-                        <span>Days</span>
-                        <p>14</p>
-                    </div>
-                    <span class="time_divider">:</span>
-                    <div class="time_count">
-                        <span>Hours</span>
-                        <p>07</p>
-                    </div>
-                    <span class="time_divider">:</span>
-                    <div class="time_count">
-                        <span>Minutes</span>
-                        <p>23</p>
-                    </div>
-                    <span class="time_divider">:</span>
-                    <div class="time_count">
-                        <span>Seconds</span>
-                        <p>27</p>
-                    </div>
-                </div>
-                <div class="email_box d-flex align-items-center justify-content-center w-100 gap-2" id="notified-div">
-                    <input class="email_input w-100" type="text" placeholder="Email" id="getnotifiedIn">
-                    <button onclick="savePickupData()" class="email_button" id="getnotified"> 
-                        <span class="button-text">
-                            <img class="notify_icon me-2" src="{{asset('landing/images/notify.svg')}}" alt="icon">
-                            Get Notified
-                        </span>
-                        <span class="loader d-none"></span>
-                    </button>
-                </div>
-                <p class="text-danger text-left" id="email-error"></p>
-                <p class=" text-left d-none" id="email-success"></p>
-                <div class="w-100 card_rowBox">
-                    <div class="card_row d-flex align-items-start justify-content-center w-100 flex-wrap">
-                        <div class="cards">
-                            <div class=" card_box">
-                                <div class="cardIcon_bg">
-                                    <img src="{{asset('landing/images/card-icon-6.svg')}}" alt="card-icon">
-                                </div>
-                                <h5 class="card-title">40 Trillion</h5>
-                                <p class="card-text">In October 2024, more than 40 trillion gallons of rain fell on
-                                    the Southeast United States, including North Carolina, from Hurricane Helene and
-                                    other storms</p>
-                            </div>
-                        </div>
+<body id="top" class="ss-preload theme-particles">
 
-                        <div class="cards">
-                            <div class=" card_box">
-                                <div class="cardIcon_bg">
-                                    <img src="{{asset('landing/images/card-icon-4.svg')}}" alt="card-icon">
-                                </div>
-                                <h5 class="card-title">112 Billion</h5>
-                                <p class="card-text">Hurricane Ian (2022) dealt an estimated $112 Billion worth of
-                                    damage. One of the strongest hurricanes to hit Florida</p>
-                            </div>
-                        </div>
 
-                        <div class="cards">
-                            <div class=" card_box">
-                                <div class="cardIcon_bg">
-                                    <img src="{{asset('landing/images/card-icon-3.svg')}}" alt="card-icon">
-                                </div>
-                                <h5 class="card-title">1.3 million</h5>
-                                <p class="card-text">Hurricane claims across the Caribbean and SE US from Hurricane
-                                    Irma (2017)</p>
-                            </div>
-                        </div>
-
-                        <div class="cards">
-                            <div class=" card_box">
-                                <div class="cardIcon_bg">
-                                    <img src="{{asset('landing/images/card-icon-5.svg')}}" alt="card-icon">
-                                </div>
-                                <h5 class="card-title">34</h5>
-                                <p class="card-text">The number of U.S. major power outages related to hurricanes
-                                    and tropical storms from 1992-2009
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="cards">
-                            <div class=" card_box">
-                                <div class="cardIcon_bg">
-                                    <img src="{{asset('landing/images/card-icon-4.svg')}}" alt="card-icon">
-                                </div>
-                                <h5 class="card-title">100</h5>
-                                <p class="card-text">Hurricane Maria left Puerto Rico and the US Virgin Islands with
-                                    a large scale blackout lasting 100 days </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- preloader
+    ================================================== -->
+    <div id="preloader">
+        <div id="loader" class="dots-fade">
+            <div></div>
+            <div></div>
+            <div></div>
         </div>
     </div>
+
+
+    <!-- intro
+    ================================================== -->
+    <section id="intro" class="s-intro">
+
+        <div id="particles-js" class="s-intro__particles"></div>
+
+        <header class="s-intro__header">
+            <div class="s-intro__logo">
+                <a class="logo" href="#">
+                    <span style="color: beige;">Martease.</span>
+                </a>
+            </div>
+        </header> <!-- s-intro__header -->
+
+        <div class="row s-intro__content">
+            <div class="column">
+
+                <div class="text-pretitle">
+                    Nice to meet you.
+                </div>
+
+                <h1 class="text-huge-title">
+                    We are preparing <br>
+                    something exciting <br>
+                    & amazing for you.
+                </h1>
+
+                <div class="s-intro__content-bottom">
+
+                    <div class="s-intro__content-bottom-block">
+                        <h5>Launching in</h5>
+
+                        <div class="counter">
+                            <div class="counter__time">
+                                <span class="ss-days">00</span>
+                                <span>D</span>
+                            </div>
+                            <div class="counter__time">
+                                <span class="ss-hours">00</span>
+                                <span>H</span>
+                            </div>
+                            <div class="counter__time minutes">
+                                <span class="ss-minutes">00</span>
+                                <span>M</span>
+                            </div>
+                            <div class="counter__time">
+                                <span class="ss-seconds">00</span>
+                                <span>S</span>
+                            </div>
+                        </div> <!-- end counter -->
+
+                    </div> <!-- end s-intro-content__bottom-block -->
+
+                    <div class="s-intro__content-bottom-block">
+
+                        <h5>Follow Us</h5>
+
+                        <ul class="social">
+                            <li><a href="https://www.facebook.com">FB</a></li>
+                            <li><a href="">TW</a></li>
+                            <li><a href="">IG</a></li>
+                            <li><a href="">DB</a></li>
+                            <li><a href="">BH</a></li>
+                        </ul>
+
+                    </div> <!-- end s-intro-content__bottom-block -->
+
+                </div> <!-- end s-intro-content__bottom -->
+
+            </div>
+        </div> <!-- s-intro__content -->
+
+        <div class="s-intro__notify">
+            <button type="button" class="btn--stroke btn--small ss-modal-trigger">
+                Notify Me
+            </button>
+        </div> <!-- s-intro__notify -->
+
+        <div hidden class="s-intro__modal ss-modal">
+            <div class="ss-modal__inner">
+
+                <span class="ss-modal__close"></span>
+
+                <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+                    <path d="M.5 4.5l7 4 7-4m-13-3h12a1 1 0 011 1v10a1 1 0 01-1 1h-12a1 1 0 01-1-1v-10a1 1 0 011-1z"
+                        stroke="var(--color-2-dark)"></path>
+                </svg>
+
+                <h4>Sign Up</h4>
+
+                <p class="ss-modal__text">
+                    Be the first to know about the latest updates and
+                    get exclusive offer on our grand opening.
+                </p>
+
+                <form id="mc-form" class="mc-form">
+                    <input type="email" name="EMAIL" id="mce-EMAIL" class="u-fullwidth text-center"
+                        placeholder="Email Address"
+                        title="The domain portion of the email address is invalid (the portion after the @)."
+                        pattern="^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*(\.\w{2,})+$"
+                        required>
+                    <input type="submit" name="subscribe" value="Subscribe" class="btn--small btn--primary u-fullwidth">
+                    <!-- <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_cdb7b577e41181934ed6a6a44_9a91cfe7b3" tabindex="-1" value=""></div> -->
+                    <div class="mc-status"></div>
+                </form>
+
+            </div> <!-- end ss-modal__inner -->
+        </div> <!-- end ss-modal -->
+
+        <div class="s-intro__scroll">
+            <a href="#hidden" class="smoothscroll">
+                Scroll For More
+            </a>
+        </div> <!-- s-intro__scroll -->
+
+    </section> <!-- end s-intro -->
+
+
+    <!-- hidden element
+    ================================================== -->
+    <div id="hidden" aria-hidden="true" style="opacity: 0;"></div>
+
+
+    <!-- details
+    ================================================== -->
+    <section id="details" class="s-details">
+
+        <div class="row">
+            <div class="column">
+
+                <h1 class="text-huge-title text-center">
+                    Hi, We Are Martease.
+                </h1>
+
+                <nav class="tab-nav">
+                    <ul class="tab-nav__list">
+                        <li class="active" data-id="tab-about">
+                            <a href="#0">
+                                <span>About</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#tab-services">
+                                <span>Services</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#tab-contact">
+                                <span>Contact</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav> <!-- end tab-nav -->
+
+                <div class="tab-content">
+
+                    <!-- 01 - tab about -->
+                    <div id="tab-about" class='tab-content__item'>
+
+                        <div class="row tab-content__item-header">
+                            <div class="column">
+                                <h2>Our Story.</h2>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="column">
+                                <p class="lead">
+                                    Martease was born out of a vision to empower small shop vendors by bridging the gap
+                                    between buyers and sellers in the digital world. We understand that independent
+                                    businesses often struggle to gain online visibility, and that’s where we step in.
+                                    Our platform provides a seamless, user-friendly marketplace where vendors can
+                                    showcase their products, and buyers can explore a diverse range of offerings, all in
+                                    one place.
+                                </p>
+
+
+                                <div class="row">
+                                    <div class="column lg-6 tab-12">
+                                        <h4>More About Us.</h4>
+                                        <p>
+                                            At Martease, we believe in fostering a thriving ecosystem where local
+                                            businesses can compete with larger retailers while maintaining their unique
+                                            charm. By integrating smart technology with a personalized shopping
+                                            experience, we ensure that vendors reach the right customers and buyers
+                                            discover high-quality products with ease. Whether you’re a seller looking to
+                                            expand your reach or a buyer searching for authentic local goods, Martease
+                                            is your trusted partner in the online marketplace revolution.
+                                        </p>
+                                    </div>
+                                    <div class="column lg-6 tab-12">
+                                        <h4>Need More Details?</h4>
+                                        <p>
+                                            Need a great reliable website?
+                                            We highly recommend <a href="#">Martease</a>.
+                                            Powerful web and Wordpress hosting. Guaranteed. Starting at minimum price
+                                            per month.
+                                        </p>
+                                        <a href="#" class="btn btn--stroke u-fullwidth">Get Started Now</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div> <!-- end 01 - tab about -->
+
+                    <!-- 02 - tab services -->
+                    <div id="tab-services" class='tab-content__item'>
+
+                        <div class="row tab-content__item-header">
+                            <div class="column">
+                                <h2>What We Do.</h2>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="column">
+                                <p class="lead">
+                                    At Martease, we help small shop vendors establish a strong online presence by
+                                    creating customized websites that attract more buyers. In today’s digital era,
+                                    having an online storefront is essential for growth, and we make it easy for sellers
+                                    to showcase their products, engage with customers, and drive more sales.
+                                </p>
+                                <p class="lead">Our goal is to empower vendors with beautifully designed, user-friendly
+                                    websites that not only highlight their unique offerings but also enhance their
+                                    credibility in the market. By providing seamless e-commerce solutions, we ensure
+                                    that small businesses can compete with larger retailers while building lasting
+                                    relationships with their customers. With Martease, sellers can take their businesses
+                                    to the next level and thrive in the digital marketplace.</p>
+                            </div>
+                        </div>
+
+                        <div class="row services-list block-lg-one-half block-md-one-half block-tab-whole">
+
+                            <div class="column services-list__item">
+                                <div class="services-list__item-content">
+                                    <h4 class="item-title">Brand Identity</h4>
+                                    <p>
+                                        At Martease, we help businesses craft a compelling brand identity that resonates
+                                        with their audience. From logo design to color schemes and typography, we ensure
+                                        that every element aligns with your brand’s values and personality. A strong
+                                        identity builds trust and recognition, helping small vendors stand out in a
+                                        competitive market.
+
+
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="column services-list__item">
+                                <div class="services-list__item-content">
+                                    <h4 class="item-title">Illustration</h4>
+                                    <p>
+                                        Visual storytelling is key to capturing customer attention, and our expert
+                                        illustrators bring your brand to life through creative, custom artwork. Whether
+                                        it’s for product promotions, website visuals, or social media content, we design
+                                        engaging illustrations that enhance your brand’s aesthetic and communicate your
+                                        message effectively.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="column services-list__item">
+                                <div class="services-list__item-content">
+                                    <h4 class="item-title">Web Design</h4>
+                                    <p>
+                                        A great online presence starts with an intuitive and visually appealing website.
+                                        We specialize in designing responsive, user-friendly websites that not only look
+                                        stunning but also provide seamless navigation for customers. Our goal is to
+                                        create digital storefronts that attract buyers and boost sales for small
+                                        vendors.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="column services-list__item">
+                                <div class="services-list__item-content">
+                                    <h4 class="item-title">Product Strategy</h4>
+                                    <p>
+                                        Success in e-commerce requires a solid product strategy. We help vendors
+                                        position their products effectively by analyzing market trends, optimizing
+                                        product presentations, and enhancing customer experience. From pricing
+                                        strategies to inventory management, we ensure that sellers maximize their reach
+                                        and revenue.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="column services-list__item">
+                                <div class="services-list__item-content">
+                                    <h4 class="item-title">UI/UX Design</h4>
+                                    <p>
+                                        User experience is at the heart of what we do. We focus on creating intuitive
+                                        interfaces that enhance customer interactions, ensuring that every website we
+                                        build is easy to navigate and visually appealing. By prioritizing smooth and
+                                        engaging user experiences, we help businesses convert visitors into loyal
+                                        customers.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="column services-list__item">
+                                <div class="services-list__item-content">
+                                    <h4 class="item-title">E-Commerce</h4>
+                                    <p>
+                                        Our expertise in e-commerce solutions empowers small vendors to sell online with
+                                        ease. From setting up product listings to secure payment integrations and mobile
+                                        optimization, we provide all the tools needed for a successful online store. We
+                                        simplify the process so vendors can focus on what they do best—selling great
+                                        products.
+                                    </p>
+                                </div>
+                            </div>
+
+                        </div> <!-- end services-list -->
+
+                    </div> <!-- end 02 - tab services -->
+
+                    <!-- 03 - tab contact -->
+                    <div id="tab-contact" class="tab-content__item">
+
+                        <div class="row tab-content__item-header">
+                            <div class="column">
+                                <h2>Get in Touch.</h2>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="column">
+
+                                <p class="lead">
+                                    Have questions or want to collaborate? We’d love to hear from you! Reach out to us,
+                                    and let’s build something amazing together.
+                                </p>
+
+                                <div class="row">
+                                    <div class="column lg-6 tab-12">
+                                        <h4>Where to Find Us</h4>
+
+                                        <p>
+                                            AT MADHUBANI PO-BIJAYEE PS<br>
+                                            PURBA CHAMPARAN,<br>
+                                            GHORSAHAN, Bihar, India<br> 
+                                            845315
+
+
+                                        </p>
+
+                                    </div>
+
+                                    <div class="column lg-6 tab-12">
+                                        <h4>Follow Us</h4>
+
+                                        <ul class="link-list">
+                                            <li><a href="#0">Facebook</a></li>
+                                            <li><a href="#0">Twitter</a></li>
+                                            <li><a href="#0">Instagram</a></li>
+                                        </ul>
+
+                                    </div>
+                                </div>
+
+                                <p class="tab-content__item-bottom">
+                                    <a href="mailto:support@martease.in" class="contact-email">support@martease.in</a>
+                                    <span class="contact-number">
+                                        <a href="tel:+917257832941">+91 7257832941</a>
+                                        <!-- <span>/</span>
+                                        <a href="tel:123-456-9000">+123 456 9000</a> -->
+                                    </span>
+                                </p>
+
+                            </div>
+                        </div>
+
+                    </div> <!-- end 03 - tab contact -->
+
+                </div> <!-- end tab content -->
+
+                <!-- footer  -->
+                <footer>
+                    <div class="ss-copyright">
+                        <span>© Copyright Martease. 2025</span>
+                        <span>Design by <a href="https://github.com/ritshkr1">Ritesh</a></span>
+                    </div>
+                </footer>
+
+            </div>
+        </div>
+
+        <div class="ss-go-top">
+            <a class="smoothscroll" title="Back to Top" href="#top">
+                <span>Back to Top</span>
+                <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="26" height="26">
+                    <path
+                        d="M7.5 1.5l.354-.354L7.5.793l-.354.353.354.354zm-.354.354l4 4 .708-.708-4-4-.708.708zm0-.708l-4 4 .708.708 4-4-.708-.708zM7 1.5V14h1V1.5H7z"
+                        fill="currentColor"></path>
+                </svg>
+            </a>
+        </div> <!-- end ss-go-top -->
+
+    </section> <!-- end s-details -->
+
+
+    <!-- Java Script
+    ================================================== -->
+    <script src="js/plugins.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/particles.min.js"></script>
+    <script src="js/particle-settings.js"></script>
+
 </body>
-<style>
-    #email-error {
-        text-align: left;
-        max-width: 550px;
-        width: 100%;
-        padding-top: 10px;
-    }
-    #email-success {
-        background-color: rgba(94, 94, 95, 0.699);
-        border: 1px solid rgb(99, 98, 98);
-        border-radius: 16px;
-        text-align: center;
-        max-width: 550px;
-        width: 100%;
-        padding: 10px;
-        font-weight: 700;
-        font-size: 20px;
-        color: #fff !important;
-    }
-    .loader {
-        border: 2px solid #f3f3f3;
-        border-radius: 50%;
-        border-top: 2px solid #e5001300;
-        width: 20px;
-        height: 20px;
-        animation: spin 1s linear infinite;
-        display: inline-block;
-        margin-left: 0px;
-    }
 
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-</style>
-<script>
-    // $("#getnotified").on("click", function(){
-      
-    function savePickupData(event){
-        $('#email-error').html('');
-        var formData = {
-            _token: '{{ csrf_token() }}', 
-            email: $("#getnotifiedIn").val()
-        };
-
-        var button = $('#getnotified');
-        var loader = button.find('.loader');
-        var buttonText = button.find('.button-text');
-
-        button.prop('disabled', true);
-        loader.removeClass('d-none');
-        buttonText.addClass('d-none');
-
-        $.ajax({
-            url: "{{ route('admin.get-notified') }}", 
-            type: 'POST',
-            data: formData,
-            success: function(response) {
-                $("#getnotifiedIn").val('');
-                $("#notified-div").addClass("d-none");
-                $('#email-success').html(response.message);
-                $('#email-success').removeClass("d-none");
-                setTimeout(function() {
-                    $('#email-success').html('');
-                    $('#email-success').addClass("d-none");
-                    $("#notified-div").removeClass("d-none");
-                }, 5000);
-                // window.location.href = response.data.redirect_url;
-                button.prop('disabled', false);
-                loader.addClass('d-none');
-                buttonText.removeClass('d-none');
-            },
-            error: function(xhr, status, error) {
-                if(xhr.status == 422){
-                    var errors = xhr.responseJSON.error;
-                    var errorMessages = '';
-                    $.each(errors, function(key, value) {
-                        errorMessages = value[0];
-                        $('#' + key + '-error').html(errorMessages);
-                    });
-                    // toastr.warning("Validation error");
-                    button.prop('disabled', false);
-                    loader.addClass('d-none');
-                    buttonText.removeClass('d-none');
-                } else {
-                    toastr.error(xhr.responseJSON.message);
-                    button.prop('disabled', false);
-                    loader.addClass('d-none');
-                    buttonText.removeClass('d-none');
-                }
-            }
-        });
-    }
-    // });
-</script>
-<script>
-    $(document).ready(function() {
-    const targetDate = new Date("April 5, 2025 23:59:59").getTime();
-
-    function updateTimer() {
-        const now = new Date().getTime();
-        let totalSeconds = Math.floor((targetDate - now) / 1000);
-
-        if (totalSeconds > 0) {
-            const days = Math.floor(totalSeconds / (24 * 60 * 60));
-            const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
-            const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
-            const seconds = totalSeconds % 60;
-            $('.time_box .time_count:nth-child(1) p').text(days);
-            $('.time_box .time_count:nth-child(3) p').text(hours);
-            $('.time_box .time_count:nth-child(5) p').text(minutes);
-            $('.time_box .time_count:nth-child(7) p').text(seconds);
-        } else {
-            clearInterval(timerInterval);
-            $('.time_box').text("Countdown finished!");
-        }
-    }
-
-    const timerInterval = setInterval(updateTimer, 1000);
-    updateTimer(); 
-});
-
-</script>
 </html>
