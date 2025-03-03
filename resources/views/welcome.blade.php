@@ -447,10 +447,10 @@
 
     <!-- Java Script
     ================================================== -->
-    <script src="js/plugins.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/particles.min.js"></script>
-    <script src="js/particle-settings.js"></script>
+    <script src="{{asset('landing/js/plugins.js')}}"></script>
+    <script src="{{asset('landing/js/main.js')}}"></script>
+    <script src="{{asset('landing/js/particles.min.js')}}"></script>
+    <script src="{{asset('landing/js/particle-settings.js')}}"></script>
 
 </body>
 
