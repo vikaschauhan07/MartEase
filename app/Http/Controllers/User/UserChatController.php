@@ -59,7 +59,7 @@ class UserChatController extends Controller
     public function sendMessage(Request $request){
         try {
             $validator = Validator::make($request->all(), [
-                'to_id' => 'required|numeric|exists:usres,id',
+                'to_id' => 'required|numeric|exists:users,id',
                 'message' => 'string',
             ]);
             if ($validator->fails()) {
