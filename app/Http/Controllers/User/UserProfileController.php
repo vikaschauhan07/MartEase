@@ -479,4 +479,41 @@ class UserProfileController extends Controller
             return ApiResponse::errorResponse(null, "Server Error", ProjectConstants::SERVER_ERROR);
         }
     }
+
+    public function getAllUsers(Request $request)
+    {
+        $query = User::query();
+
+        // Apply search filter
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('email', 'LIKE', "%{$search}%")
+                    ->orWhere('phone_number', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $users = $query->paginate(10);
+
+        $usersTransformed = $users->map(function ($user) {
+            return [
+                "id" => $user->id,
+                "name" => $user->name,
+                "email" => $user->email,
+                "is_user" => 1,
+                "phone_code" => (string) $user->phone_code,
+                "phone_number" => $user->phone_number,
+                "profile_image" => $user->profile_image ? asset($user->profile_image) : null,
+                "is_email_verified" => $user->is_email_verified,
+                "is_password_set" => $user->is_password_set
+            ];
+        });
+
+        return ApiResponse::successResponse(
+            $users->count() > 0 ? $users->setCollection($usersTransformed) : null,
+            "Users fetched successfully.",
+            ProjectConstants::SUCCESS
+        );
+    }
 }

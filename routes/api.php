@@ -71,6 +71,7 @@ Route::group(['prefix' => 'v1'],function () {
 
             // Blog apis
             Route::get("/get-all-blogs", [UserBlogController::class, "getAllBlogs"]);
+            Route::get("/users/all", [UserProfileController::class, "getAllUsers"]);
             
             Route::group(['prefix' => 'categorys'],function () {
                 Route::get('/', [AdminCategoryController::class, 'getAllCategorysApi']);
