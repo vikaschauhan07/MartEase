@@ -9,6 +9,8 @@ use App\Http\Controllers\User\UserProfileController;
 use App\Http\Middleware\AuthenticateUser;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminCategoryController;
+use App\Http\Controllers\User\UserCategoryController;
+use App\Http\Controllers\User\UserProductCntroller;
 use App\Http\Controllers\User\UserSwitchUserCntroller;
 use App\Http\Middleware\AuthenticateSeller;
 
@@ -73,9 +75,14 @@ Route::group(['prefix' => 'v1'],function () {
             Route::get("/get-all-blogs", [UserBlogController::class, "getAllBlogs"]);
             
             Route::group(['prefix' => 'categorys'],function () {
-                Route::get('/', [AdminCategoryController::class, 'getAllCategorysApi']);
-                Route::post('/request', [AdminCategoryController::class, 'requestCategory'])->name('admin.add-category-post');        
-            });    
+                Route::get('/', [UserCategoryController::class, 'getAllCategorysApi']);
+                Route::post('/request', [UserCategoryController::class, 'requestCategory']);        
+            });  
+            
+            Route::group(['prefix' => 'products'],function () {
+                Route::get('/', [UserProductCntroller::class, 'getAllProducts']);
+                Route::post('/request', [UserProductCntroller::class, 'requestProduct']);        
+            }); 
             // Post Apis
             Route::get("/get-issues-list", [UserPostController::class, "getReportIssuesList"]);
             Route::post("/create-post", [UserPostController::class, "createPost"]);
