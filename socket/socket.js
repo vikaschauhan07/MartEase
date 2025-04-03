@@ -6,7 +6,7 @@ class Socket {
     console.log("Constructor initialized");
     this.io = socket;
     // this.baseurl = "https://hunkr.itechnolabs.co.in/";
-    this.baseurl = "https://hunkr.itechnolabs.co.in/";
+    this.baseurl = "https://martease.in/";
 // this.baseurl = "http://127.0.0.1:8001/"
 
     // this.baseurl = "http://192.168.1.100:8000/";
